@@ -1,6 +1,6 @@
 Summary: Generate various DNS records such as RFC-4255 SSHFP and RFC-698 TLSA
 Name: hash-slinger
-Version: 2.0
+Version: 2.1
 Release: 1%{?dist}
 License: GPLv2+
 Url:  http://people.redhat.com/pwouters/%{name}/
@@ -43,6 +43,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc %{_mandir}/man1/*
 
 %changelog
+* Sat Sep 15 2012 Paul Wouters <pwouters@redhat.com> - 2.1-1
+- Updated COPYING to properly reflect GPLv2 "or later"
+
 * Fri Aug 24 2012 Paul Wouters <pwouters@redhat.com> - 2.0-1
 - Initial package
 
