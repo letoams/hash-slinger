@@ -1,0 +1,25 @@
+LICENSE: GPLv2+, see COPYING
+
+This pacakge contains various tools to generate special DNS records
+
+sshfp	Generate RFC-4255 SSHFP DNS records from known_hosts files or ssh-keyscan
+tlsa	Generate RFC-6698  TLSA DNS records via TLS
+
+Authors:
+
+Paul Wouters <pwouters@redhat.com>
+Pieter Lexis <pieter.lexis@os3.nl>
+
+Contributors:
+
+Chrisopher Olah <christopherolah.co@gmail.com>
+James Brown <jbrown@yelp.com>
+
+REQUIREMENTS:
+
+python-dns: http://www.pythondns.org/
+M2Crypto: http://chandlerproject.org/Projects/MeTooCrypto
+unbound-python: http://www.unbound.net/
+python libraries: argparse, ipaddr
+ssh-keygen (from openssh)
+

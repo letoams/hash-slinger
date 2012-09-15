@@ -1,0 +1,86 @@
+v1.2.2 (Sep 6, 2011)
+- Fix -4 / -6 flags [Chris]
+- Throw errors on stderr to improve pipe usage [Ludwig Nusse]
+- openSUSE package information on import error [Ludwig Nusse]
+- Fix nameserver by IP address (ldns workaround [Chris]
+- Fix case where AAAA is found but no IPv6 is available [Paul]
+
+v1.2.1 (April 25th, 2011)
+- Fix copyright information to clearly make it is all GPLv2+ [Paul]
+
+v1.2.0 (April 13th, 2011)
+- dane : Added the dane command (See IETF DANE working group) [Paul]
+- sshfp: Fix quiet for external commands [James Brown]
+- sshfp: Merged in subprocess changes [James Brown]
+- sshfp: Use optparse, some code refactoring [James Brown]
+- sshfp: Added -U UDP option [James Brown]
+- sshfp: Rename of some functions [James Brown]
+- sshfp: doclifted man page, generate when needed using xmlto [Paul]
+
+v1.1.6 (October 13th, 2010)
+- Fix quiet for external commands [James Brown]
+- Merged in subprocess changes [James Brown]
+- Use optparse, some code refactoring [James Brown]
+- Added -U UDP option [James Brown]
+- Rename of some functions [James Brown]
+
+v1.1.5
+- Fixes for https://bugs.launchpad.net/ubuntu/+source/sshfp/+bug/355886
+- Fix for sha Deprecation warning [Martin Jackson]
+- Fix for use of os.popen3 [Martin Jackson]
+- Sync debian/ with Debian (thanks)
+- Various small pylint fixes [Simon Deziel]
+
+v1.1.4
+- Fixes to man page [Maximiliano Curia]
+- Fixes to Makefile for Debian [Maximiliano Curia]
+
+v1.1.3
+- Moved trailing-dot option from -t to -d
+- Added -t / --type <rsa|dsa>
+- Added -T / --timeout <secs>
+- Fixed printing of bogus blanc line at the end.
+- Use Makefile in Fedora spec file
+
+v1.1.2
+- Added -p port option - Patch by andrew@lewman.com
+- Added Debian package [jacob] 'fakeroot debian/rules binary'
+- Fixed getopt order [paul]
+- Added a mailinglist: http://lists.xelerance.com/mailman/listinfo/sshfp/
+
+v1.1.1
+- Ignore hashed hostname entries in known_hosts files [paul]
+- Fix "sshfp -k -a" [paul]
+
+v1.1.0
+- All SSHFP records were created badly using a sha1() on the uuencoded
+  keyblow instead of the raw uudecoded keyblob.
+- Fixed getrecord -> getRecord call when using -a (AXFR)
+- Added a newline when -o is used, to make dnssigner happy
+
+v1.0.6
+- Added man page
+
+v1.0.5
+- Fixed Debian package pointer to be python-dnspython
+- Fixed trailing dot for ORIGIN entry when AXFR is used
+- Changed -d/--dns and -f/--knownhosts to -s/--scan and -k/--knownhosts [hugh daniel]
+- Add timestamp in named.conf comment syntax to axfr unless -q/--quiet is used. [paul]
+- Exclude localhost from AXFR since it leaks information about the host that ran sshfp [paul]
+- Moved files into git repository. anonymous git access at http://git.xelerance.com/
+- Fix "sshfp -k hostname" where hostname is not a domainname's A record.
+
+v1.0.4
+- Fixed option parsing [paul]
+- Hardened dns failures [patrick naubert]
+
+v1.0.3
+- Public release of sshfp
+- Added fedora spec file for packaging
+
+v1.0.1
+- Renamed knownhosts2sshfp to sshfp since it no longer reflects the function [paul]
+- Added ssh-keyscan option on suggestion of Jake Appelbaum [paul]
+
+v1.0.0
+- Internal initial release

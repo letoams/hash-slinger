@@ -1,0 +1,57 @@
+                         SWEDE - a tool to create and verify TLSA (DANE) records
+================================================================================
+Swede aims to provide a one-stop solutions to create and test TLSA records.
+
+                                                                         LICENSE
+--------------------------------------------------------------------------------
+swede is copyright Pieter Lexis <pieter.lexis@os3.nl> and is licensed under the
+terms of the GNU General Public Licence version 2 or higher.
+
+                                                                    DEPENDENCIES
+--------------------------------------------------------------------------------
+- Python (>= 2.6)
+- python-{unbound, argparse, ipaddr, m2crypto}
+
+swede has been tested on Debian 6 (Squeeze) using the python-unbound package
+from squeeze-backports.
+
+                                                                        FEATURES
+--------------------------------------------------------------------------------
+- Creation of all 24 permutations of TLSA records
+- Output in generic and RFC format
+- Ability to load certificates from disk to create records from
+- Verify TLSA records 'in the field' with the certificates offered by the TLS
+  service running on the server
+
+                                                                           USAGE
+--------------------------------------------------------------------------------
+See EXAMPLES below and try the following:
+swede --help
+swede create --help
+swede verify --help
+
+                                                                        EXAMPLES
+--------------------------------------------------------------------------------
+swede create --usage 1 --output rfc www.os3.nl
+swede --insecure create --usage 0 mail.google.com
+
+swede verify -p 1516 dane.kiev.practicum.os3.nl
+swede verify ulthar.us
+                                                                            TODO
+--------------------------------------------------------------------------------
+- Create and verify should check the CN in the Subject of the certificate
+- The verification for usage 2 is _VERY_ naive
+- Creation tool that does an AXFR for a full zone, collects all hostnames, gets
+  the certificates (or the CA certificate from the commandline) and creates all
+  TLSA records.
+- Test certificates (other than using the functions in M2Crypto) when no chain
+  is presented during the TLS session
+- Manpage
+
+                                                                      KNOWN BUGS
+--------------------------------------------------------------------------------
+- swede is mostly untested.
+- Not everything that can raise an exception is in a try/except block
+- No support for SRV record indirection (see Issue 28 of the DANE-WG)
+- No support for TLS/SSL over UDP or SCTP
+- No support for STARTTLS type protocols (only 'straight' SSL/TLS conections)

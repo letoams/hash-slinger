@@ -1,0 +1,8 @@
+v2.1 (Sep 15, 2012)
+- Clarify that the license is GPLv2+
+
+v2.0 (Aug 24, 2012)
+- Initial release of hash-slinger
+- Pulled in sshfp from the sshfp package
+- Pulled in swede as tlsa from github
+- Added tlsa man page
