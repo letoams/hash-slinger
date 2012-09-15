@@ -37,7 +37,6 @@ make DESTDIR=${RPM_BUILD_ROOT} install
 rm -rf ${RPM_BUILD_ROOT}
 
 %files 
-%defattr(-,root,root)
 %doc BUGS CHANGES README COPYING
 %{_bindir}/*
 %doc %{_mandir}/man1/*
