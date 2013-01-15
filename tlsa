@@ -63,14 +63,13 @@ def genTLSA(hostname, protocol, port, certificate, output='generic', usage=1, se
 
 def getA(hostname, secure=True):
 	"""Gets a list of A records for hostname, returns a list of ARecords"""
+	records = ""
 	try:
 		records = getRecords(hostname, rrtype='A', secure=secure)
 	except InsecureLookupException, e:
 		print str(e)
-		sys.exit(1)
 	except DNSLookupError, e:
 		print 'Unable to resolve %s: %s' % (hostname, str(e))
-		sys.exit(1)
 	ret = []
 	for record in records:
 		ret.append(ARecord(hostname, str(IPv4Address(int(b2a_hex(record),16)))))
@@ -78,14 +77,13 @@ def getA(hostname, secure=True):
 
 def getAAAA(hostname, secure=True):
 	"""Gets a list of A records for hostname, returns a list of AAAARecords"""
+	records = ""
 	try:
 		records = getRecords(hostname, rrtype='AAAA', secure=secure)
 	except InsecureLookupException, e:
 		print str(e)
-		sys.exit(1)
 	except DNSLookupError, e:
 		print 'Unable to resolve %s: %s' % (hostname, str(e))
-		sys.exit(1)
 	ret = []
 	for record in records:
 		ret.append(AAAARecord(hostname, str(IPv6Address(int(b2a_hex(record),16)))))
@@ -614,7 +612,15 @@ if __name__ == '__main__':
 						sys.stdout.write('Port %s not numerical or within correct range (1 <= port <= 65535), try again (hit enter for default 443): ' % user_input)
 			# Get the address records for the host
 			try:
-				addresses = getA(args.host, secure=secure) + getAAAA(args.host, secure=secure)
+				#addresses = getA(args.host, secure=secure) + getAAAA(args.host, secure=secure)
+				if not args.ipv4 and not args.ipv6:
+					addresses = getA(args.host, secure=secure) + getAAAA(args.host, secure=secure)
+
+				elif args.ipv4:
+					addresses = getA(args.host, secure=secure)
+				else:
+					addresses = getAAAA(args.host, secure=secure)
+
 			except InsecureLookupException, e:
 				print >> sys.stderr, str(e)
 				sys.exit(1)
