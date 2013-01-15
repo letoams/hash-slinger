@@ -407,7 +407,8 @@ if __name__ == '__main__':
 	else:
 		cadir = "."
 	parser.add_argument('--ca-cert', metavar='/PATH/TO/CERTSTORE', action='store', default = cadir, help='Path to a CA certificate or a directory containing the certificates (default: %(default)s)')
-	parser.add_argument('--quiet', '-q', action='store_true', help='Only print the result of the validation')
+	parser.add_argument('--debug', '-d', action='store_true', help='Print details plus the result of the validation')
+	parser.add_argument('--quiet', '-q', action='store_true', help='Ignored for backwards compatibility')
 
 	parser.add_argument('--certificate', help='The certificate used for the host. If certificate is empty, the certificate will be downloaded from the server')
 	parser.add_argument('--output', '-o', action='store', default='rfc', choices=['generic','rfc','both'], help='The type of output. Generic (RFC 3597, TYPE52), RFC (TLSA) or both (default: %(default)s).')
@@ -443,7 +444,7 @@ if __name__ == '__main__':
 		for record in records:
 			pre_exit = 0
 			# First, check if the first three fields have correct values.
-			if not args.quiet:
+			if args.debug:
 				print 'Received the following record for name %s:' % record.name
 				print '\tUsage:\t\t\t\t%d (%s)' % (record.usage, {0:'CA Constraint', 1:'End-Entity Constraint + chain to CA', 2:'Trust Anchor', 3:'End-Entity'}.get(record.usage, 'INVALID'))
 				print '\tSelector:\t\t\t%d (%s)' % (record.selector, {0:'Certificate', 1:'SubjectPublicKeyInfo'}.get(record.selector, 'INVALID'))
@@ -456,7 +457,7 @@ if __name__ == '__main__':
 				print >> sys.stderr, 'Error: %s' % str(e)
 				continue
 			else:
-				if not args.quiet:
+				if args.debug:
 					print 'This record is valid (well-formed).'
 
 			if args.only_rr:
@@ -468,7 +469,7 @@ if __name__ == '__main__':
 				print >> sys.stderr, 'Only SSL over TCP is supported (sorry)'
 				sys.exit(0)
 
-			if not args.quiet:
+			if args.debug:
 				print 'Attempting to verify the record with the TLS service...'
 
 			if not args.ipv4 and not args.ipv6:
@@ -479,7 +480,7 @@ if __name__ == '__main__':
 				addresses = getAAAA(args.host, secure=secure)
 
 			for address in addresses:
-				if not args.quiet:
+				if args.debug:
 					print 'Got the following IP: %s' % str(address)
 				# We do the certificate handling here, as M2Crypto keeps segfaulting when we do it in a method
 				ctx = SSL.Context()
@@ -521,7 +522,7 @@ if __name__ == '__main__':
 						else:
 							print 'FAIL (Usage 1): Certificate offered by the server matches the one mentioned in the TLSA record but the following error was raised during PKIX validation: %s' % getVerificationErrorReason(verify_result)
 							if pre_exit == 0: pre_exit = 2
-						if not args.quiet: print 'The matched certificate has Subject: %s' % cert.get_subject()
+						if args.debug: print 'The matched certificate has Subject: %s' % cert.get_subject()
 					else:
 						print 'FAIL: Certificate offered by the server does not match the TLSA record'
 						if pre_exit == 0: pre_exit = 2
@@ -544,7 +545,7 @@ if __name__ == '__main__':
 						else:
 							print 'FAIL (Usage 0): A certificate in the certificate chain offered by the server matches the one mentioned in the TLSA record but is not a CA certificate'
 							if pre_exit == 0: pre_exit = 2
-						if not args.quiet: print 'The matched certificate has Subject: %s' % cert.get_subject()
+						if args.debug: print 'The matched certificate has Subject: %s' % cert.get_subject()
 					else:
 						print 'FAIL (Usage 0): No certificate in the certificate chain offered by the server matches the TLSA record'
 						if pre_exit == 0: pre_exit = 2
@@ -564,7 +565,7 @@ if __name__ == '__main__':
 							continue
 					if matched:
 						print 'SUCCESS (usage 2): A certificate in the certificate chain (including the end-entity certificate) offered by the server matches the TLSA record'
-						if not args.quiet: print 'The matched certificate has Subject: %s' % cert.get_subject()
+						if args.debug: print 'The matched certificate has Subject: %s' % cert.get_subject()
 					else:
 						print 'FAIL (usage 2): No certificate in the certificate chain (including the end-entity certificate) offered by the server matches the TLSA record'
 						if pre_exit == 0: pre_exit = 2
@@ -572,7 +573,7 @@ if __name__ == '__main__':
 				elif record.usage == 3: # EE cert MUST match
 					if verifyCertMatch(record,chain[0]):
 						print 'SUCCESS (usage 3): The certificate offered by the server matches the TLSA record'
-						if not args.quiet: print 'The matched certificate has Subject: %s' % chain[0].get_subject()
+						if args.debug: print 'The matched certificate has Subject: %s' % chain[0].get_subject()
 					else:
 						print 'FAIL (usage 3): The certificate offered by the server does not match the TLSA record'
 						if pre_exit == 0: pre_exit = 2
@@ -593,8 +594,8 @@ if __name__ == '__main__':
 			if args.protocol != 'tcp':
 				print >> sys.stderr, 'Only SSL over TCP is supported (sorry)'
 				sys.exit(1)
-
-			print 'No certificate specified on the commandline, attempting to retrieve it from the server %s' % (args.host)
+			if args.debug:
+				print 'No certificate specified on the commandline, attempting to retrieve it from the server %s' % (args.host)
 			connection_port = args.port
 			if args.port == '*':
 				sys.stdout.write('The port specified on the commandline is *, please specify the port of the TLS service on %s (443): ' % args.host)
@@ -626,7 +627,8 @@ if __name__ == '__main__':
 				sys.exit(1)
 
 			for address in addresses:
-				print 'Attempting to get certificate from %s' % str(address)
+				if args.debug:
+					print 'Attempting to get certificate from %s' % str(address)
 				# We do the certificate handling here, as M2Crypto keeps segfaulting when try to do stuff with the cert if we don't
 				ctx = SSL.Context()
 				ctx.set_verify(SSL.verify_none, depth=9)
