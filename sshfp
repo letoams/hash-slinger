@@ -39,7 +39,7 @@ global port
 global timeout
 global algo
 
-VERSION = "2.1"
+VERSION = "2.2"
 DEFAULT_KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
 
 def show_version():
