@@ -1,3 +1,8 @@
+v2.2 (June 24, 2013)
+- quiet (-q) is the new default, use -v to get verbose output [Paul]
+- tlsa: fix --ipv4/--ipv6 options. Assume both if none specified
+- tlsa: Usage 0 fix and M2Crypto path fix [Patrick]
+
 v2.1 (Sep 15, 2012)
 - Clarify that the license is GPLv2+
 
