@@ -1,9 +1,9 @@
-hash-slinger (2.2-1) lucid; urgency=low
+hash-slinger (2.3-1) lucid; urgency=low
 
-  * Initial package
+  * hash-slinger
 
   This package is NOT an official Debian/Ubuntu package. Please do
   not file any Debian/Ubuntu bug reports for this package but contact
   <pwouters@redhat.com> if you have a problem.
 
- -- Paul Wouters <pwouters@redhat.com>>  Fri, 24 Aug 2012 17:36:10 -0400
+ -- Paul Wouters <pwouters@redhat.com>>  Tue, 31 Dec 2013 23:59:59 -0400

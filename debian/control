@@ -1,16 +1,17 @@
 Source: hash-slinger
 Section: net
 Priority: optional
-Maintainer: Paul Wouters <paul@redhat.com>
+Maintainer: Paul Wouters <pwouters@redhat.com>
 Build-Depends: debhelper (>= 7.0.50~), python-support (>= 0.5.3)
 Homepage: http://people.redhat.com/pwouters/hash-slinger/
 Standards-Version: 3.8.4
 
 Package: hash-slinger
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-dnspython, openssh-client, python-argparse, python-unbound, python-ipaddr
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-dnspython, openssh-client, python-argparse, python-unbound, python-ipaddr, python-gnupg
 XB-Python-Version: ${python:Versions}
 Description: This pacakge contains various tools to generate special DNS records
 
-sshfp	Generate RFC-4255 SSHFP DNS records from known_hosts files or ssh-keyscan
-tlsa	Generate RFC-6698  TLSA DNS records via TLS
+sshfp		Generate RFC-4255 SSHFP DNS records from known_hosts files or ssh-keyscan
+tlsa		Generate RFC-6698  TLSA DNS records via TLS
+openpgpkey	Generate RFC-TBD OPENPGPKEY DNS records using gnupg and a local keychain

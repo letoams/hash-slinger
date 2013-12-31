@@ -1,3 +1,6 @@
+v2.3 (Dec 31, 2013)
+- Added openpgpkey support [Paul]
+
 v2.2 (June 24, 2013)
 - quiet (-q) is the new default, use -v to get verbose output [Paul]
 - tlsa: fix --ipv4/--ipv6 options. Assume both if none specified

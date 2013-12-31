@@ -1,6 +1,6 @@
-Summary: Generate various DNS records such as RFC-4255 SSHFP and RFC-698 TLSA
+Summary: Generate and verify various DNS records such as SSHFP, TLSA and OPENPGPKEY
 Name: hash-slinger
-Version: 2.2
+Version: 2.3
 Release: 1%{?dist}
 License: GPLv2+
 Url:  http://people.redhat.com/pwouters/%{name}/
@@ -8,7 +8,7 @@ Source:  http://people.redhat.com/pwouters/%{name}/%{name}-%{version}.tar.gz
 Group: Applications/Internet
 # Only to regenerate the man page, which is shipped per default
 # Buildrequires: xmlto
-Requires: python-dns, python-argparse, unbound-python, python-ipaddr
+Requires: python-dns, python-argparse, unbound-python, python-ipaddr, python-gnupg >= 0.3.5-2
 Requires: openssh-clients >= 4, m2crypto
 BuildArch: noarch
 Obsoletes: sshfp < 2.0
@@ -17,9 +17,9 @@ Provides: sshfp  = %{version}
 %description
 This package contains various tools to generate special DNS records:
 
-sshfp   Generate RFC-4255 SSHFP DNS records from known_hosts files
-        or ssh-keyscan
-tlsa    Generate RFC-6698  TLSA DNS records via TLS
+sshfp      Generate RFC-4255 SSHFP DNS records from known_hosts or ssh-keyscan
+tlsa       Generate RFC-6698  TLSA DNS records via TLS
+openpgpkey Generate RFC-<TBD> OPENPGPKEY DNS records
 
 It pulls in software from 'sshfp' and 'swede'
 
@@ -42,6 +42,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc %{_mandir}/man1/*
 
 %changelog
+* Tue Dec 31 2013 Paul Wouters <pwouters@redhat.com> - 2.3-1
+- Updated to 2.3 which adds support for OPENPGPKEY
+
 * Mon Jun 24 2013 Paul Wouters <pwouters@redhat.com> - 2.2-1
 - New version
 

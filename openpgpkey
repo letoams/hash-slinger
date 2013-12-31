@@ -1,0 +1,152 @@
+#!/usr/bin/python
+
+# openpgpkey: create OPENPGPKEY DNS record from a key in your keychain.
+
+# Copyright Paul Wouters <paul@cypherpunks.ca>
+#
+# License: GNU GENERAL PUBLIC LICENSE Version 2 or later
+
+import sys
+import os
+import gnupg
+import unbound
+import base64
+import tempfile
+import shutil
+
+VERSION="2.3"
+ROOTKEY="/etc/unbound/root.key"
+DLVKEY="/etc/unbound/dlv.isc.org.key"
+OPENPGPKEY="65280"
+
+def asctohex(s):
+    empty = '' # I use this construct because I find ''.join() too dense
+    return empty.join(['%02x' % ord(c) for c in s]) # the %02 pads when needed
+
+def getOPENPGPKEY(email,secure):
+	"""This function queries for an OPENPGPKEY DNS Resource Record and compares it with the local gnupg keyring"""
+
+	global resolvconf
+	ctx = unbound.ub_ctx()
+	#ctx.add_ta_file(ROOTKEY)
+	unbound.ub_ctx_trustedkeys(ctx,ROOTKEY)
+	ctx.set_option("dlv-anchor-file:", DLVKEY)
+	# Use the local cache
+	if resolvconf and os.path.isfile(resolvconf):
+		ctx.resolvconf(resolvconf)
+
+	try:
+		username, domainname = email.split("@")
+	except:
+		sys.exit("Invalid email syntax")
+
+	keyname = "%s._openpgpkey.%s"%(base64.b32encode(username),domainname)
+
+	status, result = ctx.resolve(keyname, rrtype=int(OPENPGPKEY))
+	if status == 0 and result.havedata:
+		if not result.secure:
+			print "it was not secure"
+			if secure:
+				# The data is insecure and a secure lookup was requested
+				sys.exit("Error: query data is not secure")
+			else:
+				print >> sys.stderr, 'Warning: query data is not secure.'
+		# If we are here the data was either secure or insecure data is accepted
+		return result.data.raw
+	else:
+		sys.exit('Unsuccesful lookup or no data returned for rrtype %s.' %OPENPGPKEY)
+
+if __name__ == '__main__':
+	import argparse
+	# create the parser
+	parser = argparse.ArgumentParser(description='Create and verify OPENPGPKEY records.', epilog='For bugs. see paul@nohats.ca')
+
+	parser.add_argument('--verify','-v', action='store_true', help='Verify an OPENPGPKEY record, exit 0 when all records are matched, exit 1 on error.')
+
+	parser.add_argument('--create','-c', action='store_true', help='Create an OPENPGKEY record')
+	parser.add_argument('--version', action='version', version='openpgpkey version: %s'%VERSION, help='show version and exit')
+
+	parser.add_argument('--insecure', action='store_true', default=False, help='Allow use of non-dnssec secured answers')
+	parser.add_argument('--resolvconf', metavar='/PATH/TO/RESOLV.CONF', action='store', default='', help='Use a recursive resolver listed in a resolv.conf file (default: /etc/resolv.conf)')
+	parser.add_argument('email', metavar="email")
+
+	parser.add_argument('--debug', '-d', action='store_true', help='Print details plus the result of the validation')
+	parser.add_argument('--quiet', '-q', action='store_true', help='Ignored for backwards compatibility')
+
+	parser.add_argument('--output', '-o', action='store', default='generic', choices=['generic','rfc','both'], help='The type of output. Generic (RFC 3597, TYPE65280), RFC (OPENPGPKEY) or both (default: %(default)s).')
+
+	args = parser.parse_args()
+
+	global resolvconf
+	if args.resolvconf:
+		if os.path.isfile(args.resolvconf):
+			resolvconf = args.resolvconf
+		else:
+			print >> sys.stdout, '%s is not a file. Unable to use it as resolv.conf' % args.resolvconf
+			sys.exit(1)
+	else:
+		resolvconf = None
+
+	# not operations are fun!
+	secure = not args.insecure
+
+	if args.verify:
+		openpgpkeys = getOPENPGPKEY(args.email, secure)
+		if len(openpgpkeys) == 0:
+			print 'Received nothing?'
+			sys.exit(1)
+		fdir = tempfile.mkdtemp(".gpg","openpgpkey-","/tmp/")
+		gpgnet = gnupg.GPG(gnupghome=fdir)
+		gpgdisk = gnupg.GPG()
+		for openpgpkey in openpgpkeys:
+			import_result = gpgnet.import_keys(base64.b64decode(openpgpkey))
+		received_keys = gpgnet.list_keys() 
+		disk_keys = gpgdisk.list_keys()
+		for pkey in received_keys:
+			if args.debug:
+				print >> sys.stderr, "Received from DNS: Key-ID:%s Fingerprint:%s"%(pkey["keyid"], pkey["fingerprint"])
+			found = False
+			for dkey in disk_keys:
+				if args.debug:
+					print >> sys.stderr, "Local disk: Key-ID:%s Fingerprint:%s"%(dkey["keyid"], dkey["fingerprint"])
+				if pkey["keyid"] == dkey["keyid"] and pkey["fingerprint"] == dkey["fingerprint"]:
+					found = True
+			if found == False:
+				shutil.rmtree(fdir)
+				sys.exit("Received key with keyid %s was not found"%pkey["keyid"])
+			else:
+				if args.debug:
+					print >> sys.stderr, "Received key with keyid %s was found"%pkey["keyid"]
+		print "All OPENPGPKEY records matched with content from the local keyring"
+		shutil.rmtree(fdir)
+		sys.exit(0)
+			
+			
+			
+
+
+	else: # we want to create
+		gpgdisk = gnupg.GPG()
+		disk_keys = gpgdisk.list_keys()
+		found = False
+		for pgpkey in disk_keys:
+			for uid in pgpkey["uids"]:
+				if "<%s>"%args.email in uid:
+					found = True
+					if args.debug:
+						print >> sys.stderr,  "Found matching KeyID: %s (%s) for %s"%(pgpkey["keyid"], pgpkey["fingerprint"], uid)
+					ekey = gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=False)
+					ekey64 = base64.b64encode(ekey)
+					user,domain = args.email.split("@")
+					user32 = base64.b32encode(user).lower()
+					if args.output != "generic":
+						print "%s._openpgpkey.%s. IN OPENPGPKEY %s"%(user32,domain,ekey64)
+					if args.output !=  "rfc":
+						if args.debug:
+							print "Length for generic record is %s"%len(ekey64)
+						print "%s._openpgpkey.%s. IN TYPE65280 \# %s %s"%(user32,domain,len(ekey64),asctohex(ekey64))
+		if not found:
+			sys.exit("No key found containing the email address '%s' in the keyid(s)"%args.email)
+		
+
+
