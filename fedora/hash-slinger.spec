@@ -1,6 +1,6 @@
 Summary: Generate and verify various DNS records such as SSHFP, TLSA and OPENPGPKEY
 Name: hash-slinger
-Version: 2.3
+Version: 2.4
 Release: 1%{?dist}
 License: GPLv2+
 Url:  http://people.redhat.com/pwouters/%{name}/
@@ -42,6 +42,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc %{_mandir}/man1/*
 
 %changelog
+* Mon Jan  6 2014 Paul Wouters <pwouters@redhat.com> - 2.4-1
+- Updated to 2.4 which updates OPENPGPKEY support
+
 * Tue Dec 31 2013 Paul Wouters <pwouters@redhat.com> - 2.3-1
 - Updated to 2.3 which adds support for OPENPGPKEY
 

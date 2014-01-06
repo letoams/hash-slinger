@@ -1,4 +1,4 @@
-hash-slinger (2.3-1) lucid; urgency=low
+hash-slinger (2.4-1) lucid; urgency=low
 
   * hash-slinger
 
@@ -6,4 +6,4 @@ hash-slinger (2.3-1) lucid; urgency=low
   not file any Debian/Ubuntu bug reports for this package but contact
   <pwouters@redhat.com> if you have a problem.
 
- -- Paul Wouters <pwouters@redhat.com>>  Tue, 31 Dec 2013 23:59:59 -0400
+ -- Paul Wouters <pwouters@redhat.com>>  Mon, 6 Jan 2014 23:59:59 -0400
