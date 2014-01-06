@@ -14,26 +14,19 @@ import base64
 import tempfile
 import shutil
 
-VERSION="2.3"
-ROOTKEY="/etc/unbound/root.key"
-DLVKEY="/etc/unbound/dlv.isc.org.key"
-OPENPGPKEY="65280"
+VERSION="2.4"
+global openpgpkey_rrtype
+global ctx
 
 def asctohex(s):
     empty = '' # I use this construct because I find ''.join() too dense
     return empty.join(['%02x' % ord(c) for c in s]) # the %02 pads when needed
 
-def getOPENPGPKEY(email,secure):
+def getOPENPGPKEY(email,insecure_ok):
 	"""This function queries for an OPENPGPKEY DNS Resource Record and compares it with the local gnupg keyring"""
 
-	global resolvconf
-	ctx = unbound.ub_ctx()
-	#ctx.add_ta_file(ROOTKEY)
-	unbound.ub_ctx_trustedkeys(ctx,ROOTKEY)
-	ctx.set_option("dlv-anchor-file:", DLVKEY)
-	# Use the local cache
-	if resolvconf and os.path.isfile(resolvconf):
-		ctx.resolvconf(resolvconf)
+	global ctx
+	global openpgpkey_rrtype
 
 	try:
 		username, domainname = email.split("@")
@@ -42,19 +35,18 @@ def getOPENPGPKEY(email,secure):
 
 	keyname = "%s._openpgpkey.%s"%(base64.b32encode(username),domainname)
 
-	status, result = ctx.resolve(keyname, rrtype=int(OPENPGPKEY))
+	status, result = ctx.resolve(keyname, rrtype=int(openpgpkey_rrtype))
 	if status == 0 and result.havedata:
 		if not result.secure:
-			print "it was not secure"
-			if secure:
+			if not insecure_ok:
 				# The data is insecure and a secure lookup was requested
-				sys.exit("Error: query data is not secure")
+				sys.exit("Error: query data is not secured by DNSSEC - use --insecure to override")
 			else:
-				print >> sys.stderr, 'Warning: query data is not secure.'
+				print >> sys.stderr, 'Warning: query data was not secured by DNSSEC.'
 		# If we are here the data was either secure or insecure data is accepted
 		return result.data.raw
 	else:
-		sys.exit('Unsuccesful lookup or no data returned for rrtype %s.' %OPENPGPKEY)
+		sys.exit('Unsuccesful lookup or no data returned for rrtype %s.' %openpgpkey_rrtype)
 
 if __name__ == '__main__':
 	import argparse
@@ -67,7 +59,9 @@ if __name__ == '__main__':
 	parser.add_argument('--version', action='version', version='openpgpkey version: %s'%VERSION, help='show version and exit')
 
 	parser.add_argument('--insecure', action='store_true', default=False, help='Allow use of non-dnssec secured answers')
-	parser.add_argument('--resolvconf', metavar='/PATH/TO/RESOLV.CONF', action='store', default='', help='Use a recursive resolver listed in a resolv.conf file (default: /etc/resolv.conf)')
+	parser.add_argument('--resolvconf', action='store', default='', help='Use a recursive resolver listed in a resolv.conf file (default: /etc/resolv.conf)')
+	parser.add_argument('--rootanchor', action='store', default='/var/lib/unbound/root.anchor', help='Location of the unbound compatible DNSSEC root.anchor (default: /var/lib/unbound/root.anchor)')
+	parser.add_argument('--rrtype', metavar='rrtype', action='store', default=65280, help='Location of the unbound compatible DNSSEC root.anchor (default: /var/lib/unbound/root.anchor)')
 	parser.add_argument('email', metavar="email")
 
 	parser.add_argument('--debug', '-d', action='store_true', help='Print details plus the result of the validation')
@@ -77,21 +71,54 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
-	global resolvconf
+	global openpgpkey_rrtype
+
+	# unbound setup
+	global ctx
+	ctx = unbound.ub_ctx()
+	resolvconf = "/etc/resolv.conf"
+	rootanchor = "/var/lib/unbound/root.anchor"
+	dlvkey = "/etc/unbound/dlv.isc.org.key"
+
 	if args.resolvconf:
 		if os.path.isfile(args.resolvconf):
 			resolvconf = args.resolvconf
 		else:
 			print >> sys.stdout, '%s is not a file. Unable to use it as resolv.conf' % args.resolvconf
 			sys.exit(1)
-	else:
-		resolvconf = None
+	ctx.resolvconf(resolvconf)
 
-	# not operations are fun!
-	secure = not args.insecure
+	if os.path.isfile(dlvkey):
+		ctx.set_option("dlv-anchor-file:", dlvkey)
+
+	if args.rootanchor:
+		if os.path.isfile(args.rootanchor):
+			resolvconf = args.rootanchor
+		else:
+			print >> sys.stdout, '%s is not a file. Unable to use it as rootanchor' % args.rootanchor
+			sys.exit(1)
+	else:
+		if not os.path.isfile(rootanchor):
+			rootanchor = None
+	if rootanchor:
+		ctx.add_ta_file(rootanchor)
+	else:
+		# fallback to a root key if we can find it
+		if os.path.isfile("/etc/unbound/root.key"):
+			rootkey = "/etc/unbound/root.key"
+		elif os.path.isfile("/var/lib/unbound/root.key"):
+			rootkey = "/var/lib/unbound/root.key"
+		else:
+			rootkey = None
+		if rootkey:
+			unbound.ub_ctx_trustedkeys(ctx,rootkey)
+
+	# unbound setup completed
+
+	openpgpkey_rrtype = int(args.rrtype)
 
 	if args.verify:
-		openpgpkeys = getOPENPGPKEY(args.email, secure)
+		openpgpkeys = getOPENPGPKEY(args.email, args.insecure)
 		if len(openpgpkeys) == 0:
 			print 'Received nothing?'
 			sys.exit(1)
@@ -143,8 +170,8 @@ if __name__ == '__main__':
 						print "%s._openpgpkey.%s. IN OPENPGPKEY %s"%(user32,domain,ekey64)
 					if args.output !=  "rfc":
 						if args.debug:
-							print "Length for generic record is %s"%len(ekey64)
-						print "%s._openpgpkey.%s. IN TYPE65280 \# %s %s"%(user32,domain,len(ekey64),asctohex(ekey64))
+							print "Length for generic record is %s"%len(ekey)
+						print "%s._openpgpkey.%s. IN TYPE%s \# %s %s"%(user32,domain,openpgpkey_rrtype,len(ekey),asctohex(ekey))
 		if not found:
 			sys.exit("No key found containing the email address '%s' in the keyid(s)"%args.email)
 		
