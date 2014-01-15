@@ -6,15 +6,17 @@
 #
 # License: GNU GENERAL PUBLIC LICENSE Version 2 or later
 
+VERSION="2.5"
+
 import sys
 import os
 import gnupg
 import unbound
 import base64
+from hashlib import sha224
 import tempfile
 import shutil
 
-VERSION="2.4"
 global openpgpkey_rrtype
 global ctx
 
@@ -33,7 +35,7 @@ def getOPENPGPKEY(email,insecure_ok):
 	except:
 		sys.exit("Invalid email syntax")
 
-	keyname = "%s._openpgpkey.%s"%(base64.b32encode(username),domainname)
+	keyname = "%s._openpgpkey.%s"%(sha224(username).hexdigest() ,domainname)
 
 	status, result = ctx.resolve(keyname, rrtype=int(openpgpkey_rrtype))
 	if status == 0 and result.havedata:
@@ -126,7 +128,7 @@ if __name__ == '__main__':
 		gpgnet = gnupg.GPG(gnupghome=fdir)
 		gpgdisk = gnupg.GPG()
 		for openpgpkey in openpgpkeys:
-			import_result = gpgnet.import_keys(base64.b64decode(openpgpkey))
+			import_result = gpgnet.import_keys(openpgpkey)
 		received_keys = gpgnet.list_keys() 
 		disk_keys = gpgdisk.list_keys()
 		for pkey in received_keys:
@@ -165,13 +167,14 @@ if __name__ == '__main__':
 					ekey = gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=False)
 					ekey64 = base64.b64encode(ekey)
 					user,domain = args.email.split("@")
-					user32 = base64.b32encode(user).lower()
+					euser = sha224(user).hexdigest()
+
 					if args.output != "generic":
-						print "%s._openpgpkey.%s. IN OPENPGPKEY %s"%(user32,domain,ekey64)
+						print "%s._openpgpkey.%s. IN OPENPGPKEY %s"%(euser,domain,ekey64)
 					if args.output !=  "rfc":
 						if args.debug:
 							print "Length for generic record is %s"%len(ekey)
-						print "%s._openpgpkey.%s. IN TYPE%s \# %s %s"%(user32,domain,openpgpkey_rrtype,len(ekey),asctohex(ekey))
+						print "%s._openpgpkey.%s. IN TYPE65280 \# %s %s"%(euser,domain,len(ekey64),asctohex(ekey))
 		if not found:
 			sys.exit("No key found containing the email address '%s' in the keyid(s)"%args.email)
 		

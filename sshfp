@@ -4,6 +4,8 @@
 # Copyright 2012 Paul Wouters <pwouters@redhat.com> 
 # License: GNU GENERAL PUBLIC LICENSE Version 2 or later
 
+VERSION = "2.5"
+
 import os
 import sys
 import subprocess
@@ -39,7 +41,6 @@ global port
 global timeout
 global algo
 
-VERSION = "2.4"
 DEFAULT_KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
 
 def show_version():

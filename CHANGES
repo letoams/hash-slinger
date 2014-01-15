@@ -1,5 +1,7 @@
-v2.4 (Jan 6, 2014)
+v2.5 (Jan 14, 2014)
 - Updated openpgpkey support for new draft-wouters-openpgpkey-02 [Paul]
+
+v2.4 (Jan 6, 2014)
 - add --rrtype and --rootanchor support, some cleanup, to openpgpkey [Paul]
 
 v2.3 (Dec 31, 2013)
