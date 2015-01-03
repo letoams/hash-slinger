@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: sshfp
 .\"    Author: [see the "AUTHORS" section]
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: Aug 24, 2012
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: January 2, 2015
 .\"    Manual: Internet / DNS
 .\"    Source: Paul Wouters
 .\"  Language: English
 .\"
-.TH "SSHFP" "1" "Aug 24, 2012" "Paul Wouters" "Internet / DNS"
+.TH "SSHFP" "1" "January 2, 2015" "Paul Wouters" "Internet / DNS"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,11 +32,16 @@ sshfp \- Generate SSHFP DNS records from knownhosts files or ssh\-keyscan
 .SH "SYNTAX"
 .PP
 sshfp [\fB\-k\fR
-<\fIknownhosts_file\fR>] [\fB\-d\fR] [\fB\-a\fR] | [<\fIhost1\fR> [\fIhost2 \&.\&.\&.]\fR]
+<\fIknownhosts_file\fR>] [\fB\-d\fR] [\fB\-a\fR] [\fB\-\-type\fR
+<algo>] [\fB\-\-digest\fR
+<digest>] [<\fIhost1\fR> [\fIhost2 \&.\&.\&.]\fR]
+.PP
 sshfp
 \fB\-s\fR
 [\fB\-p\fR
-<\fIport\fR>] [\fB\-d\fR] <\fB\-a\fR> [\fB\-n <nameserver\fR>\fI] <domain1\fR> [\fIdomain2\fR] | <\fIhost1\fR> [\fIhost2 \&.\&.\&.\fR] >
+<\fIport\fR>] [\fB\-d\fR] [\fB\-a\fR] [\fB\-\-type\fR
+<algo>] [\fB\-\-digest\fR
+<digest>] [\fB\-n <nameserver\fR>\fI] <domain1\fR> [\fIdomain2\fR] <\fIhost1\fR> [\fIhost2 \&.\&.\&.\fR] >
 .SH "DESCRIPTION"
 .PP
 sshfp generates RFC4255 SSHFP DNS records based on the public keys stored in a known_hosts file, which implies the user has previously trusted this key, or public keys can be obtained by using ssh\-keyscan (1)\&. Using ssh\-keyscan (1) implies a secure path to connect to the hosts being scanned\&. It also implies a trust in the DNS to obtain the IP address of the hostname to be scanned\&. If the nameserver of the domain allows zone tranfers (AXFR), an entire domain can be processed for all its A records\&.
@@ -118,9 +123,7 @@ sshfp \-k ~paul/\&.ssh/known_hosts bofh\&.nohats\&.ca www\&.openswan\&.org \-o /
 sshfp \-a \-d \-d nohats\&.ca \-n ns0\&.nohats\&.ca >> /var/named/primary/nohats\&.ca
 .SH "SEE ALSO"
 .PP
-\fBssh-keyscan\fR(1)
-\fBssh\fR(1)
-\fBtlsa\fR(1)
+\fBssh-keyscan\fR(1)\fBssh\fR(1)\fBtlsa\fR(1)
 and RFC\-4255
 .SH "AUTHORS"
 .PP

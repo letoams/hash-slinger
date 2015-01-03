@@ -2,11 +2,11 @@
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
                    "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 <refentry id='tlsa'>
-<refentryinfo><date>April 12, 2012</date></refentryinfo>
+<refentryinfo><date>January 2, 2015</date></refentryinfo>
 <refmeta>
 <refentrytitle>tlsa</refentrytitle>
 <manvolnum>1</manvolnum>
-<refmiscinfo class='date'>August 24, 2012</refmiscinfo>
+<refmiscinfo class='date'>January 2, 2015</refmiscinfo>
 <refmiscinfo class='source'>Paul Wouters</refmiscinfo>
 <refmiscinfo class='manual'>Internet / DNS</refmiscinfo>
 </refmeta>
@@ -22,6 +22,8 @@
            [<option>--resolv.conf /PATH/TO/RESOLV.CONF</option>] 
            [<option>--port PORT</option>] [<option>--protocol {tcp,udp,sctp}</option>] [<option>--ponly-rr</option>]
            [<option>--ca-cert /PATH/TO/CERTSTORE </option>]
+           [<option>--rootkey /PATH/TO/ROOT.KEY </option>]
+           [<option>--dlvkey /PATH/TO/DLV.KEY </option>]
            [<option>--quiet</option>] [<option>--certificate CERTIFICATE </option>]
            [<option>--output {rfc,generic,both}</option>] [<option>-usage {0,1,2,3} </option> ]
            [<option>--selector {0,1}</option>] [<option>-mtype {0,1,2} </option> ]
@@ -87,6 +89,18 @@ to generate TLSA records. Currently. tlsa has no AXFR support for en-mass TLSA r
   <term><option>--ca-cert</option> directory</term>
   <listitem>
 <para>Use specified directory containing CA bundles for CA validation (default:/etc/pki/tls/certs)</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--rootkey</option> filename</term>
+  <listitem>
+<para>Use specified file to read the DNSSEC root key (in anchor or bind format) </para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--dlvkey</option> directory</term>
+  <listitem>
+<para>Use specified file to read the DLV key (default:/etc/unbound/dlv.isc.org.key")</para>
   </listitem>
   </varlistentry>
   <varlistentry>

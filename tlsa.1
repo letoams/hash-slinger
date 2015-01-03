@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: tlsa
 .\"    Author: [see the "AUTHORS" section]
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: April 12, 2012
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: January 2, 2015
 .\"    Manual: Internet / DNS
 .\"    Source: Paul Wouters
 .\"  Language: English
 .\"
-.TH "TLSA" "1" "April 12, 2012" "Paul Wouters" "Internet / DNS"
+.TH "TLSA" "1" "January 2, 2015" "Paul Wouters" "Internet / DNS"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,7 +31,7 @@
 tlsa \- Create and verify RFC\-6698 TLSA DNS records
 .SH "SYNTAX"
 .PP
-tlsa [\fB\-h\fR] [\fB\-\-verify\fR] [\fB\-create\fR] [\fB\-\-version\fR] [\fB\-4\fR] [\fB\-6\fR\fB\-\-insecure\fR] [\fB\-\-resolv\&.conf /PATH/TO/RESOLV\&.CONF\fR] [\fB\-\-port PORT\fR] [\fB\-\-protocol {tcp,udp,sctp}\fR] [\fB\-\-ponly\-rr\fR] [\fB\-\-ca\-cert /PATH/TO/CERTSTORE \fR] [\fB\-\-quiet\fR] [\fB\-\-certificate CERTIFICATE \fR] [\fB\-\-output {rfc,generic,both}\fR] [\fB\-usage {0,1,2,3} \fR
+tlsa [\fB\-h\fR] [\fB\-\-verify\fR] [\fB\-create\fR] [\fB\-\-version\fR] [\fB\-4\fR] [\fB\-6\fR\fB\-\-insecure\fR] [\fB\-\-resolv\&.conf /PATH/TO/RESOLV\&.CONF\fR] [\fB\-\-port PORT\fR] [\fB\-\-protocol {tcp,udp,sctp}\fR] [\fB\-\-ponly\-rr\fR] [\fB\-\-ca\-cert /PATH/TO/CERTSTORE \fR] [\fB\-\-rootkey /PATH/TO/ROOT\&.KEY \fR] [\fB\-\-dlvkey /PATH/TO/DLV\&.KEY \fR] [\fB\-\-quiet\fR] [\fB\-\-certificate CERTIFICATE \fR] [\fB\-\-output {rfc,generic,both}\fR] [\fB\-usage {0,1,2,3} \fR
 ] [\fB\-\-selector {0,1}\fR] [\fB\-mtype {0,1,2} \fR
 ]
 \fIhostname\fR
@@ -82,6 +82,16 @@ Use specified certificate file, instead of retrieving the certificate from the s
 Use specified directory containing CA bundles for CA validation (default:/etc/pki/tls/certs)
 .RE
 .PP
+\fB\-\-rootkey\fR filename
+.RS 4
+Use specified file to read the DNSSEC root key (in anchor or bind format)
+.RE
+.PP
+\fB\-\-dlvkey\fR directory
+.RS 4
+Use specified file to read the DLV key (default:/etc/unbound/dlv\&.isc\&.org\&.key")
+.RE
+.PP
 \fB\-\-output\fR rfc | generic | both
 .RS 4
 Output format of TLSA record\&. "TLSA" for rfc, "TYPE52" for generic (default: rfc)
@@ -120,8 +130,7 @@ tlsa \-\-verify \-4 nohats\&.ca
 tlsa \-\-create \-\-insecure fedoraproject\&.org
 .SH "SEE ALSO"
 .PP
-\fBsshfp\fR(1)
-\fBssh-keygen\fR(1)and RFC 6698
+\fBsshfp\fR(1)\fBssh-keygen\fR(1)and RFC 6698
 .PP
 \m[blue]\fBhttp://people\&.redhat\&.com/pwouters/hash\-slinger/\fR\m[]
 .PP

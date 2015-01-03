@@ -3,11 +3,11 @@
                    "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 <!-- lifted from troff+man by doclifter -->
 <refentry id='sshfp1'>
-<refentryinfo><date>Aug 24, 2012</date></refentryinfo>
+<refentryinfo><date>January 2, 2015</date></refentryinfo>
 <refmeta>
 <refentrytitle>sshfp</refentrytitle>
 <manvolnum>1</manvolnum>
-<refmiscinfo class='date'>Auguest 24, 2012</refmiscinfo>
+<refmiscinfo class='date'>January 2, 2015</refmiscinfo>
 <refmiscinfo class='source'>Paul Wouters</refmiscinfo>
 <refmiscinfo class='manual'>Internet / DNS</refmiscinfo>
 </refmeta>
@@ -18,9 +18,10 @@
 <!-- body begins here -->
 
 <refsect1 id='syntax'><title>SYNTAX</title>
-<para>sshfp [<option>-k</option> &lt;<emphasis remap='I'>knownhosts_file</emphasis>&gt;] [<option>-d</option>] [<option>-a</option>] | [&lt;<emphasis remap='I'>host1</emphasis>&gt; [<emphasis remap='I'>host2 ...]</emphasis>]
+<para>sshfp [<option>-k</option> &lt;<emphasis remap='I'>knownhosts_file</emphasis>&gt;] [<option>-d</option>] [<option>-a</option>] [<option>--type</option> &lt;algo&gt;] [<option>--digest</option> &lt;digest&gt;] [&lt;<emphasis remap='I'>host1</emphasis>&gt; [<emphasis remap='I'>host2 ...]</emphasis>]
+</para>
 <!-- .br -->
-sshfp <option>-s</option> [<option>-p</option> &lt;<emphasis remap='I'>port</emphasis>&gt;] [<option>-d</option>] &lt;<option>-a</option>&gt; [<option>-n &lt;nameserver</option>&gt;<emphasis remap='P->I'>] &lt;domain1</emphasis>&gt; [<emphasis remap='I'>domain2</emphasis>] | &lt;<emphasis remap='I'>host1</emphasis>&gt; [<emphasis remap='I'>host2 ...</emphasis>] &gt;</para>
+<para>sshfp <option>-s</option> [<option>-p</option> &lt;<emphasis remap='I'>port</emphasis>&gt;] [<option>-d</option>] [<option>-a</option>] [<option>--type</option> &lt;algo&gt;] [<option>--digest</option> &lt;digest&gt;] [<option>-n &lt;nameserver</option>&gt;<emphasis remap='P->I'>] &lt;domain1</emphasis>&gt; [<emphasis remap='I'>domain2</emphasis>] &lt;<emphasis remap='I'>host1</emphasis>&gt; [<emphasis remap='I'>host2 ...</emphasis>] &gt;</para>
 </refsect1>
 
 <refsect1 id='description'><title>DESCRIPTION</title>
