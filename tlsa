@@ -28,9 +28,13 @@ from binascii import a2b_hex, b2a_hex
 from hashlib import sha256, sha512
 from ipaddr import IPv4Address, IPv6Address
 
-ROOTKEY="/etc/unbound/root.key"
 DLVKEY="/etc/unbound/dlv.isc.org.key"
-CAFILE='/etc/pki/tls/certs/ca-bundle.crt'
+ROOTKEY="none"
+cauldron = ( "/var/lib/unbound/root.anchor", "/var/lib/unbound/root.key", "/etc/unbound/root.key" )
+for root in cauldron:
+	if os.path.isfile(root):
+		ROOTKEY=root
+		break
 
 def genTLSA(hostname, protocol, port, certificate, output='generic', usage=1, selector=0, mtype=1):
 	"""This function generates a TLSARecord object using the data passed in the parameters,
@@ -131,9 +135,14 @@ def getRecords(hostname, rrtype='A', secure=True):
 	"""Do a lookup of a name and a rrtype, returns a list of binary coded strings. Only queries for rr_class IN."""
 	global resolvconf
 	ctx = unbound.ub_ctx()
-	#ctx.add_ta_file(ROOTKEY)
-	unbound.ub_ctx_trustedkeys(ctx,ROOTKEY)
-	ctx.set_option("dlv-anchor-file:", DLVKEY)
+	if os.path.isfile(ROOTKEY):
+		# file format guessing - unbound should deal with this :(
+		try:
+			ctx.add_ta_file(ROOTKEY)
+		except:
+			unbound.ub_ctx_trustedkeys(ctx,ROOTKEY)
+	if os.path.isfile(DLVKEY):
+		ctx.set_option("dlv-anchor-file:", DLVKEY)
 	# Use the local cache
 	if resolvconf and os.path.isfile(resolvconf):
 		ctx.resolvconf(resolvconf)
@@ -151,13 +160,13 @@ def getRecords(hostname, rrtype='A', secure=True):
 		if not result.secure:
 			if secure:
 				# The data is insecure and a secure lookup was requested
-				raise InsecureLookupException('Error: query data not secure and secure data requested, unable to continue')
+				raise InsecureLookupException('Error: Answer was not DNSSEC-secure')
 			else:
 				print >> sys.stderr, 'Warning: query data is not secure.'
 		# If we are here the data was either secure or insecure data is accepted
 		return result.data.raw
 	else:
-		raise DNSLookupError('Unsuccesful lookup or no data returned for rrtype %s.' % rrtype)
+		raise DNSLookupError('Unsuccesful DNS lookup or no data returned for rrtype %s.' % rrtype)
 
 def getHash(certificate, mtype):
 	"""Hashes the certificate based on the mtype.
@@ -403,14 +412,17 @@ if __name__ == '__main__':
 	parser.add_argument('--port', '-p', action='store', default='443', help='The port, or \'*\' where running TLS is located (default: %(default)s).')
 	parser.add_argument('--protocol', action='store', choices=['tcp','udp','sctp'], default='tcp', help='The protocol the TLS service is using (default: %(default)s).')
 	parser.add_argument('--only-rr', action='store_true', help='Only verify that the TLSA resource record is correct (do not check certificate)')
-	if os.path.isfile(CAFILE):
-		cadir = CAFILE
-	elif os.path.isdir("/etc/pki/tls/certs/"):
+	parser.add_argument('--rootkey', metavar='/PATH/TO/ROOT.KEY', action='store', help='Specify file location containing the DNSSEC root key')
+	parser.add_argument('--dlvkey', metavar='/PATH/TO/DLV.KEY', action='store', help='Specify file location containing the DNSSEC root key')
+
+	if os.path.isdir("/etc/pki/tls/certs/"):
 		cadir = "/etc/pki/tls/certs/"
 	elif os.path.isdir("/etc/ssl/certs/"):
 		cadir = "/etc/ssl/certs/"
 	else:
 		cadir = "."
+		print ("warning: no system wide CAdir found, using current directory")
+
 	parser.add_argument('--ca-cert', metavar='/PATH/TO/CERTSTORE', action='store', default = cadir, help='Path to a CA certificate or a directory containing the certificates (default: %(default)s)')
 	parser.add_argument('--debug', '-d', action='store_true', help='Print details plus the result of the validation')
 	parser.add_argument('--quiet', '-q', action='store_true', help='Ignored for backwards compatibility')
@@ -424,6 +436,18 @@ if __name__ == '__main__':
 	parser.add_argument('--mtype', '-m', action='store', type=int, default=1, choices=[0,1,2], help='The Matching Type of the Certificate for Association. \'0\' for Exact match, \'1\' for SHA-256 hash, \'2\' for SHA-512 (default: %(default)s).')
 
 	args = parser.parse_args()
+
+	if args.rootkey:
+		if os.path.isfile(args.rootkey):
+			ROOTKEY = args.rootkey
+		else:
+			print ("ignored specified non-existing rootkey file %s"%args.rootkey)
+
+	if args.dlvkey:
+		if os.path.isfile(args.dlvkey):
+			ROOTKEY = args.dlvkey
+		else:
+			print ("ignored nspecified non-existing dlvkey file %s"%args.dlvkey)
 
 	if args.host[-1] != '.':
 		args.host += '.'
