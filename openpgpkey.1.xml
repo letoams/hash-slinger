@@ -59,7 +59,7 @@ email address associated with it from the user's local GnuPG keychain.
   <varlistentry>
   <term><option>--output</option> rfc | generic | both </term>
   <listitem>
-<para>Output format of OPENPGPKEY record. "OPENPGPKEY" for rfc, "TYPE65280" for generic (default: generic) </para>
+<para>Output format of OPENPGPKEY record. "OPENPGPKEY" for rfc, "TYPE61" for generic (default: generic) </para>
   </listitem>
   </varlistentry>
 </variablelist>

@@ -7,6 +7,7 @@
 # License: GNU GENERAL PUBLIC LICENSE Version 2 or later
 
 VERSION="2.5"
+OPENPGPKEY=61
 
 import sys
 import os
@@ -17,7 +18,6 @@ from hashlib import sha224
 import tempfile
 import shutil
 
-global openpgpkey_rrtype
 global ctx
 
 def asctohex(s):
@@ -28,7 +28,6 @@ def getOPENPGPKEY(email,insecure_ok):
 	"""This function queries for an OPENPGPKEY DNS Resource Record and compares it with the local gnupg keyring"""
 
 	global ctx
-	global openpgpkey_rrtype
 
 	try:
 		username, domainname = email.split("@")
@@ -37,7 +36,7 @@ def getOPENPGPKEY(email,insecure_ok):
 
 	keyname = "%s._openpgpkey.%s"%(sha224(username).hexdigest() ,domainname)
 
-	status, result = ctx.resolve(keyname, rrtype=int(openpgpkey_rrtype))
+	status, result = ctx.resolve(keyname, OPENPGPKEY)
 	if status == 0 and result.havedata:
 		if not result.secure:
 			if not insecure_ok:
@@ -48,7 +47,7 @@ def getOPENPGPKEY(email,insecure_ok):
 		# If we are here the data was either secure or insecure data is accepted
 		return result.data.raw
 	else:
-		sys.exit('Unsuccesful lookup or no data returned for rrtype %s.' %openpgpkey_rrtype)
+		sys.exit('Unsuccesful lookup or no data returned for OPENPGPKEY (rrtype 61)')
 
 if __name__ == '__main__':
 	import argparse
@@ -63,18 +62,14 @@ if __name__ == '__main__':
 	parser.add_argument('--insecure', action='store_true', default=False, help='Allow use of non-dnssec secured answers')
 	parser.add_argument('--resolvconf', action='store', default='', help='Use a recursive resolver listed in a resolv.conf file (default: /etc/resolv.conf)')
 	parser.add_argument('--rootanchor', action='store', default='/var/lib/unbound/root.anchor', help='Location of the unbound compatible DNSSEC root.anchor (default: /var/lib/unbound/root.anchor)')
-	parser.add_argument('--rrtype', metavar='rrtype', action='store', default=65280, help='Location of the unbound compatible DNSSEC root.anchor (default: /var/lib/unbound/root.anchor)')
 	parser.add_argument('email', metavar="email")
 
 	parser.add_argument('--debug', '-d', action='store_true', help='Print details plus the result of the validation')
 	parser.add_argument('--quiet', '-q', action='store_true', help='Ignored for backwards compatibility')
 
-	parser.add_argument('--output', '-o', action='store', default='generic', choices=['generic','rfc','both'], help='The type of output. Generic (RFC 3597, TYPE65280), RFC (OPENPGPKEY) or both (default: %(default)s).')
+	parser.add_argument('--output', '-o', action='store', default='generic', choices=['generic','rfc','both'], help='The type of output. Generic (RFC 3597, TYPE61), RFC (OPENPGPKEY) or both (default: %(default)s).')
 
 	args = parser.parse_args()
-
-	global openpgpkey_rrtype
-	openpgpkey_rrtype = int(args.rrtype)
 
 	if args.verify and args.create:
 		sys.exit("openpgpkey: must specify --create or --verify")
@@ -171,7 +166,7 @@ if __name__ == '__main__':
 					if args.output !=  "rfc":
 						if args.debug:
 							print "Length for generic record is %s"%len(ekey)
-						print "%s._openpgpkey.%s. IN TYPE65280 \# %s %s"%(euser,domain,len(ekey64),asctohex(ekey))
+						print "%s._openpgpkey.%s. IN TYPE61 \# %s %s"%(euser,domain,len(ekey64),asctohex(ekey))
 		if not found:
 			sys.exit("No key found containing the email address '%s' in the keyid(s)"%args.email)
 		
