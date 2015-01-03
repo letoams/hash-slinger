@@ -2,6 +2,7 @@
 # Generate SSHFP DNS records (RFC4255) from knownhosts files or ssh-keyscan
 # Copyright 2010 by Xelerance http://www.xelerance.com/
 # Copyright 2012 Paul Wouters <pwouters@redhat.com>
+# Copyright 2014 Gerald Turner <gturner@unzane.com>
 # License: GNU GENERAL PUBLIC LICENSE Version 2 or later
 
 VERSION = "2.5"
@@ -12,6 +13,7 @@ import subprocess
 import optparse
 import base64
 import time
+import hashlib
 # www.dnspython.org
 try:
 	import dns.resolver
@@ -23,14 +25,6 @@ except ImportError:
 	print >> sys.stderr, "Debian: apt-get install python-dnspython   (NOT python-dns!)"
 	print >> sys.stderr, "openSUSE: zypper in python-dnspython"
 	sys.exit(1)
-
-try:
-	import hashlib
-	digest = hashlib.sha1
-except ImportError:
-	import sha
-	digest = sha.new
-
 
 global all_hosts
 global khfile
@@ -46,7 +40,7 @@ DEFAULT_KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
 def show_version():
 	print >> sys.stderr, "sshfp version: " + VERSION
 
-def create_sshfp(hostname, keytype, keyblob):
+def create_sshfp(hostname, keytype, keyblob, digesttype):
 	"""Creates an SSH fingerprint"""
 
 	if keytype == "ssh-rsa":
@@ -55,13 +49,29 @@ def create_sshfp(hostname, keytype, keyblob):
 		if keytype == "ssh-dss":
 			keytype = "2"
 		else:
+			if "ecdsa" in keytype:
+				keytype = "3"
+			else:
+				if keytype == "ssh-ed25519":
+					# TBD http://tools.ietf.org/html/draft-moonesamy-sshfp-ed25519-01
+					keytype = "4"
+				else:
+					return ""
+	if digesttype == "sha1":
+		digest = hashlib.sha1
+		digesttype = "1"
+	else:
+		if digesttype == "sha256":
+			digest = hashlib.sha256
+			digesttype = "2"
+		else:
 			return ""
 	try:
 		rawkey = base64.b64decode(keyblob)
 	except TypeError:
 		print >> sys.stderr, "FAILED on hostname "+hostname+" with keyblob "+keyblob
 		return "ERROR"
-	fpsha1 = digest(rawkey).hexdigest().upper()
+	fp = digest(rawkey).hexdigest().upper()
 	# check for Reverse entries
 	reverse = 1
 	parts = hostname.split(".", 3)
@@ -76,7 +86,7 @@ def create_sshfp(hostname, keytype, keyblob):
 	if trailing and not reverse:
 		if hostname[-1:] != ".":
 			hostname = hostname + "."
-	return hostname + " IN SSHFP " + keytype + " 1 " + fpsha1
+	return hostname + " IN SSHFP " + keytype + " " + digesttype + " " + fp
 
 def get_known_host_entry(known_hosts, host):
 	"""Get a single entry out of a known_hosts file
@@ -127,20 +137,20 @@ def sshfp_from_file(khfile, wantedHosts):
 		fingerprints.append(process_records(data, wantedHosts))
 	return "\n".join(fingerprints)
 
-def check_keytype(keytype):
+def check_keytype(keytype, hostname):
 	global algos
 	for algo in algos:
-		if "ssh-%s" % algo[:-1] == keytype[:-1]:
+		if algo in keytype:
 			return True
 	if not quiet:
 		print >> sys.stderr, "Could only find key type %s for %s" % (keytype, hostname)
 	return False
 
-def process_record(record, hostname):
+def process_record(record, hostname, digesttype):
 	(host, keytype, key) = record.split(" ")
 	key = key.rstrip()
-	if check_keytype(keytype):
-		record = create_sshfp(hostname, keytype, key)
+	if check_keytype(keytype, hostname):
+		record = create_sshfp(hostname, keytype, key, digesttype)
 		return record
 	return ""
 
@@ -153,6 +163,7 @@ def process_records(data, hostnames):
 	If "all_hosts is False and hostnames is non-empty, return
 	only the items in hostnames
 	"""
+	global digests
 	all_records = []
 	for record in data.split("\n"):
 		if record.startswith("#") or not record:
@@ -166,9 +177,10 @@ def process_records(data, hostnames):
 		if "," in host:
 			host = host.split(",")[0]
 		if all_hosts or host in hostnames or host == hostnames:
-			if not check_keytype(keytype):
+			if not check_keytype(keytype, host):
 				continue
-			all_records.append(create_sshfp(host, keytype, key))
+			for digesttype in digests:
+				all_records.append(create_sshfp(host, keytype, key, digesttype))
 	if all_records:
 		all_records.sort()
 		return "\n".join(all_records)
@@ -235,6 +247,7 @@ def sshfp_from_dns(hosts):
 	global port
 	global timeout
 	global algos
+	
 	cmd = ["ssh-keyscan", "-p", str(port), "-T", str(timeout), "-t", ",".join(algos)] + hosts
 	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	(stdout, stderr) = process.communicate()
@@ -250,6 +263,7 @@ def main():
 	global port
 	global timeout
 	global algos
+	global digests
 
 	parser = optparse.OptionParser()
 	parser.add_option("-k", "--knownhosts", "--known-hosts", 
@@ -299,9 +313,16 @@ def main():
 			action="append",
 			type="choice",
 			dest="algo",
-			choices=["rsa", "dsa"],
+			choices=["dsa", "ecdsa", "ed25519", "rsa"],
 			default=[],
-			help="key type to fetch (may be specified more than once, default dsa,rsa)")
+			help="key type to fetch (may be specified more than once, default dsa,ecdsa,ed25519,rsa)")
+	parser.add_option("--digest",
+			action="append",
+			type="choice",
+			dest="digest",
+			choices=["sha1", "sha256"],
+			default=[],
+			help="fingerprint hash function (may be specified more than once, default sha1,sha256)")
 	parser.add_option("-n", "--nameserver",
 			action="store",
 			type="string",
@@ -320,7 +341,8 @@ def main():
 	data = ""
 	trailing = options.trailing_dot
 	timeout = options.timeout
-	algos = options.algo or ["dsa", "rsa"]
+	algos = options.algo or ["dsa", "ecdsa", "ed25519", "rsa"]
+	digests = options.digest or ["sha1", "sha256"]
 	all_hosts = options.all_hosts
 	port = options.port
 	hostnames = ()
