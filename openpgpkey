@@ -122,7 +122,9 @@ if __name__ == '__main__':
 			sys.exit(1)
 		fdir = tempfile.mkdtemp(".gpg","openpgpkey-","/tmp/")
 		gpgnet = gnupg.GPG(gnupghome=fdir)
+		gpgnet.decode_errors = 'ignore'
 		gpgdisk = gnupg.GPG()
+		gpgdisk.decode_errors = 'ignore'
 		for openpgpkey in openpgpkeys:
 			import_result = gpgnet.import_keys(openpgpkey)
 		received_keys = gpgnet.list_keys() 
@@ -148,6 +150,7 @@ if __name__ == '__main__':
 
 	else: # we want to create
 		gpgdisk = gnupg.GPG()
+		gpgdisk.decode_errors = 'ignore'
 		disk_keys = gpgdisk.list_keys()
 		found = False
 		for pgpkey in disk_keys:
