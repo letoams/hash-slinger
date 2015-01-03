@@ -11,7 +11,8 @@
 # This tool is loosly based on the 'dane' program in the sshfp package by Paul
 # Wouters and Christopher Olah
 #
-# Copyright Pieter Lexis (pieter.lexis@os3.nl)
+# Copyright 2012 Pieter Lexis <pieter.lexis@os3.nl>
+# Copyright 2014 Paul Wouters <pwouters@redhat.com>
 #
 # License: GNU GENERAL PUBLIC LICENSE Version 2 or later
 

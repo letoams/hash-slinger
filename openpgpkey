@@ -2,7 +2,7 @@
 
 # openpgpkey: create OPENPGPKEY DNS record from a key in your keychain.
 
-# Copyright Paul Wouters <paul@cypherpunks.ca>
+# Copyright 2012 - 2014 Paul Wouters <paul@cypherpunks.ca>
 #
 # License: GNU GENERAL PUBLIC LICENSE Version 2 or later
 

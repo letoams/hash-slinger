@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # Generate SSHFP DNS records (RFC4255) from knownhosts files or ssh-keyscan
-# Copyright 2.16-2010 by Xelerance http://www.xelerance.com/
-# Copyright 2012 Paul Wouters <pwouters@redhat.com> 
+# Copyright 2010 by Xelerance http://www.xelerance.com/
+# Copyright 2012 Paul Wouters <pwouters@redhat.com>
 # License: GNU GENERAL PUBLIC LICENSE Version 2 or later
 
 VERSION = "2.5"
