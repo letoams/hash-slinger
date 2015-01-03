@@ -1,3 +1,12 @@
+v2.6 (Jan 2, 2015))
+- openpgpkey: Update rrtype from private use to IANA allocation (#61) [Paul]
+- openpgpkey: Remove no longer needed --rrtype option [Paul]
+- openpgpkey: Ignore uft-8/iso-8859-1 encoding errors in keyring data [Paul]
+- sshfp: Support for RFC 6594 [Gerald Turner]
+- sshfp: Support for draft-moonesamy-sshfp-ed25519-01 [Gerald Turner]
+- tlsa: New option --rootkey and --dlvkey [Paul]
+- tlsa: Try to find rootkey in various locations in achor or key format [Paul]
+
 v2.5 (Jan 14, 2014)
 - Updated openpgpkey support for new draft-wouters-openpgpkey-02 [Paul]
 
