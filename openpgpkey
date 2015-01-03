@@ -6,7 +6,7 @@
 #
 # License: GNU GENERAL PUBLIC LICENSE Version 2 or later
 
-VERSION="2.5"
+VERSION="2.6"
 OPENPGPKEY=61
 
 import sys
