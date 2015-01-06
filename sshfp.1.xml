@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
                    "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
-<!-- lifted from troff+man by doclifter -->
 <refentry id='sshfp1'>
 <refentryinfo><date>January 2, 2015</date></refentryinfo>
 <refmeta>
@@ -25,7 +24,7 @@
 </refsect1>
 
 <refsect1 id='description'><title>DESCRIPTION</title>
-<para>sshfp generates RFC4255 SSHFP DNS records based on the public keys
+<para>sshfp generates RFC-4255 SSHFP DNS records based on the public keys
 stored in a known_hosts file, which implies the user has
 previously trusted this key, or public keys can be obtained
 by using ssh-keyscan (1). Using ssh-keyscan (1) implies a secure path to connect to the hosts being scanned.

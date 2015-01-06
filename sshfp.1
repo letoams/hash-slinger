@@ -44,7 +44,7 @@ sshfp
 <digest>] [\fB\-n <nameserver\fR>\fI] <domain1\fR> [\fIdomain2\fR] <\fIhost1\fR> [\fIhost2 \&.\&.\&.\fR] >
 .SH "DESCRIPTION"
 .PP
-sshfp generates RFC4255 SSHFP DNS records based on the public keys stored in a known_hosts file, which implies the user has previously trusted this key, or public keys can be obtained by using ssh\-keyscan (1)\&. Using ssh\-keyscan (1) implies a secure path to connect to the hosts being scanned\&. It also implies a trust in the DNS to obtain the IP address of the hostname to be scanned\&. If the nameserver of the domain allows zone tranfers (AXFR), an entire domain can be processed for all its A records\&.
+sshfp generates RFC\-4255 SSHFP DNS records based on the public keys stored in a known_hosts file, which implies the user has previously trusted this key, or public keys can be obtained by using ssh\-keyscan (1)\&. Using ssh\-keyscan (1) implies a secure path to connect to the hosts being scanned\&. It also implies a trust in the DNS to obtain the IP address of the hostname to be scanned\&. If the nameserver of the domain allows zone tranfers (AXFR), an entire domain can be processed for all its A records\&.
 .SH "OPTIONS"
 .PP
 \fB\-s / \-\-scan\fR <\fIhostname1\fR> [hostname2 \&.\&.\&.]
