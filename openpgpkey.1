@@ -31,7 +31,12 @@
 openpgpkey \- Create and verify RFC\-TBD OPENPGPKEY DNS records
 .SH "SYNTAX"
 .PP
-openpgpkey [\fB\-h\fR] [\fB\-\-fetch\fR] [\fB\-\-verify\fR] [\fB\-create\fR] [\fB\-\-version\fR] [\fB\-\-insecure\fR] [\fB\-\-resolv\&.conf /PATH/TO/RESOLV\&.CONF\fR] [\fB\-\-output {rfc,generic,both}\fR]
+openpgpkey [\fB\-\-fetch\fR
+|
+\fB\-\-verify\fR] [\fB\-\-insecure\fR] [\fB\-\-resolv\&.conf /PATH/TO/RESOLV\&.CONF\fR]
+\fIuser@domain\fR
+.PP
+openpgpkey [\fB\-\-create\fR] [\fB\-\-insecure\fR] [\fB\-\-resolv\&.conf /PATH/TO/RESOLV\&.CONF\fR] [\fB\-\-output {rfc,generic,both}\fR] [\fB\-\-uid <keyid>\fR]
 \fIuser@domain\fR
 .SH "DESCRIPTION"
 .PP
@@ -44,17 +49,17 @@ Verification of OPENPGPKEY records is done by comparing the keyid and fingerprin
 .PP
 \fB\-\-fetch\fR
 .RS 4
-Fetch an OPENPGPKEY record
+Fetch an OPENPGPKEY public key record from DNS
 .RE
 .PP
 \fB\-\-create\fR
 .RS 4
-Create an OPENPGPKEY record
+Create an OPENPGPKEY DNS record
 .RE
 .PP
 \fB\-\-verify\fR
 .RS 4
-Verify an OPENPGPKEY record
+Verify a public key from the local GPG keyring with the OPENPGPKEY DNS record
 .RE
 .PP
 \fB\-\-resolvconf\fR FILE

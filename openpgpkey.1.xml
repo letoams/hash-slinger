@@ -17,11 +17,18 @@
 <!-- body begins here -->
 
 <refsect1 id='syntax'><title>SYNTAX</title>
-<para>openpgpkey [<option>-h</option>] [<option>--fetch</option>] [<option>--verify</option>]
-[<option>-create</option>] [<option>--version</option>] 
+<para>openpgpkey [<option>--fetch</option> | <option>--verify</option>]
+           [<option>--insecure</option>]
+           [<option>--resolv.conf /PATH/TO/RESOLV.CONF</option>] 
+           <emphasis remap='I'>user@domain</emphasis>
+
+<!-- .br -->
+</para>
+<para>openpgpkey [<option>--create</option>]
            [<option>--insecure</option>]
            [<option>--resolv.conf /PATH/TO/RESOLV.CONF</option>] 
            [<option>--output {rfc,generic,both}</option>]
+           [<option>--uid &lt;keyid&gt;</option>]
            <emphasis remap='I'>user@domain</emphasis>
 
 <!-- .br -->
@@ -42,19 +49,19 @@ email address associated with it from the user's local GnuPG keychain.
   <varlistentry>
   <term><option>--fetch</option> </term>
   <listitem>
-<para>Fetch an OPENPGPKEY record</para> 
+<para>Fetch an OPENPGPKEY public key record from DNS</para> 
   </listitem>
   </varlistentry>
   <varlistentry>
   <term><option>--create</option> </term>
   <listitem>
-<para>Create an OPENPGPKEY record</para> 
+<para>Create an OPENPGPKEY DNS record</para> 
   </listitem>
   </varlistentry>
   <varlistentry>
   <term><option>--verify</option> </term>
   <listitem>
-<para>Verify an OPENPGPKEY record</para> 
+<para>Verify a public key from the local GPG keyring with the OPENPGPKEY DNS record</para> 
   </listitem>
   </varlistentry>
   <varlistentry>
