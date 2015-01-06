@@ -13,7 +13,6 @@ import sys
 import os
 import gnupg
 import unbound
-import base64
 from hashlib import sha224
 import tempfile
 import shutil
@@ -65,9 +64,12 @@ if __name__ == '__main__':
 	parser.add_argument('--rootanchor', action='store', default='/var/lib/unbound/root.anchor', help='Location of the unbound compatible DNSSEC root.anchor (default: /var/lib/unbound/root.anchor)')
 	parser.add_argument('email', metavar="email")
 
+	parser.add_argument('--uid', action='store', default='', help='override the uid (email address) within the key')
+
 	parser.add_argument('--debug', '-d', action='store_true', help='Print details plus the result of the validation')
 	parser.add_argument('--quiet', '-q', action='store_true', help='Ignored for backwards compatibility')
 
+	# default for now to generic - when more tools support OPENPGPKEY, switch the default to rfc
 	parser.add_argument('--output', '-o', action='store', default='generic', choices=['generic','rfc','both'], help='The type of output. Generic (RFC 3597, TYPE61), RFC (OPENPGPKEY) or both (default: %(default)s).')
 
 	args = parser.parse_args()
@@ -87,7 +89,7 @@ if __name__ == '__main__':
 			if os.path.isfile(args.resolvconf):
 				resolvconf = args.resolvconf
 			else:
-				print >> sys.stdout, '%s is not a file. Unable to use it as resolv.conf' % args.resolvconf
+				print >> sys.stdout, 'openpgpkey: %s is not a file. Unable to use it as resolv.conf' % args.resolvconf
 				sys.exit(1)
 		ctx.resolvconf(resolvconf)
 
@@ -98,7 +100,7 @@ if __name__ == '__main__':
 			if os.path.isfile(args.rootanchor):
 				resolvconf = args.rootanchor
 			else:
-				print >> sys.stdout, '%s is not a file. Unable to use it as rootanchor' % args.rootanchor
+				print >> sys.stdout, 'openpgpkey: %s is not a file. Unable to use it as rootanchor' % args.rootanchor
 				sys.exit(1)
 		else:
 			if not os.path.isfile(rootanchor):
@@ -119,18 +121,31 @@ if __name__ == '__main__':
 
 		openpgpkeys = getOPENPGPKEY(args.email, args.insecure)
 		if len(openpgpkeys) == 0:
-			print 'Received nothing?'
+			print >> sys.stderr, 'openpgpkey: Received nothing?'
 			sys.exit(1)
 		fdir = tempfile.mkdtemp(".gpg","openpgpkey-","/tmp/")
 		gpgnet = gnupg.GPG(gnupghome=fdir)
 		gpgnet.decode_errors = 'ignore'
-		gpgdisk = gnupg.GPG()
-		gpgdisk.decode_errors = 'ignore'
 
 		for openpgpkey in openpgpkeys:
 			import_result = gpgnet.import_keys(openpgpkey)
 			if args.fetch:
-				pubkey = gpgnet.export_keys(args.email)
+				if args.uid:
+					pubkey = gpgnet.export_keys(args.uid, minimal=True)
+					if not pubkey:
+						print >> sys.stderr, 'openpgpkey: Requested uid not present in received OpenPGP data'
+						for id in  gpgnet.list_keys()[0]['uids']:
+							print >> sys.stderr, "# %s"%id
+						sys.exit(1)
+				else:
+					pubkey = gpgnet.export_keys(args.email, minimal=True)
+				if not pubkey:
+					print >> sys.stderr, 'openpgpkey: Received OpenPGP data does not contain a key with keyid %s'%args.email
+					print >> sys.stderr, '(add --uid <uid> to override with any of the below received uids)'
+					for id in  gpgnet.list_keys()[0]['uids']:
+						print >> sys.stderr, "# %s"%id
+					sys.exit(1)
+
 				pubkey = pubkey.replace("Version:","Comment: %s key obtained from DNS\nVersion:"%args.email)
 				if args.insecure:
 					pubkey = pubkey.replace("Version:","Comment: NOT VALIDATED BY DNSSEC\nVersion:")
@@ -142,6 +157,8 @@ if __name__ == '__main__':
 			sys.exit(0)
 
 		received_keys = gpgnet.list_keys() 
+		gpgdisk = gnupg.GPG()
+		gpgdisk.decode_errors = 'ignore'
 		disk_keys = gpgdisk.list_keys()
 		for pkey in received_keys:
 			if args.debug:
@@ -174,17 +191,16 @@ if __name__ == '__main__':
 					if args.debug:
 						print >> sys.stderr,  "Found matching KeyID: %s (%s) for %s"%(pgpkey["keyid"], pgpkey["fingerprint"], uid)
 					ekey = gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=False)
-					# does not like 0x99 (') in ascii
-					ekey64 = base64.b64encode(ekey)
+					ekey64 = "".join(gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=True).split("\n")[2:-3])
 					user,domain = args.email.split("@")
 					euser = sha224(user).hexdigest()
 
-					if args.output != "generic":
+					if args.output == "rfc":
 						print "%s._openpgpkey.%s. IN OPENPGPKEY %s"%(euser,domain,ekey64)
-					if args.output !=  "rfc":
+					if args.output ==  "generic":
 						if args.debug:
 							print "Length for generic record is %s"%len(ekey)
-						print "%s._openpgpkey.%s. IN TYPE61 \# %s %s"%(euser,domain,len(ekey64),asctohex(ekey))
+						print "%s._openpgpkey.%s. IN TYPE61 \# %s %s"%(euser,domain,len(ekey),asctohex(ekey))
 		if not found:
 			sys.exit("No key found containing the email address '%s' in the keyid(s)"%args.email)
 		
