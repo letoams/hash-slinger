@@ -1,6 +1,6 @@
 Summary: Generate and verify various DNS records such as SSHFP, TLSA and OPENPGPKEY
 Name: hash-slinger
-Version: 2.4
+Version: 2.6
 Release: 1%{?dist}
 License: GPLv2+
 Url:  http://people.redhat.com/pwouters/%{name}/
@@ -20,8 +20,9 @@ This package contains various tools to generate special DNS records:
 sshfp      Generate RFC-4255 SSHFP DNS records from known_hosts or ssh-keyscan
 tlsa       Generate RFC-6698  TLSA DNS records via TLS
 openpgpkey Generate RFC-<TBD> OPENPGPKEY DNS records
+ipseckey   Generate RFC-4025 IPSECKEY DNS records on Libreswan IPsec servers
 
-It pulls in software from 'sshfp' and 'swede'
+This package has incorporated the old 'sshfp' and 'swede' commands/packages
 
 %prep
 %setup -q 
