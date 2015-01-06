@@ -7,17 +7,21 @@ sshfp		Generate RFC-4255 SSHFP DNS records from known_hosts
 tlsa		Generate RFC-6698  TLSA DNS records via TLS
 openpgpkey	Generate draft-ietf-dane-openpgpkey-01 OPENPGPKEY DNS
 		records using gpg
+ipseckey	Generate RFC-4025 IPSECKEY DNS records on Libreswan
+		IPsec servers
+
 
 Authors:
 
-Paul Wouters <pwouters@redhat.com>
-Pieter Lexis <pieter.lexis@os3.nl>
+Paul Wouters <pwouters@redhat.com> (sshfp, tlsa, openpgpkey, ipseckey)
+Pieter Lexis <pieter.lexis@os3.nl> (tlsa)
 
 Contributors:
 
 Chrisopher Olah <christopherolah.co@gmail.com>
 James Brown <jbrown@yelp.com>
 Patrick Uiterwijk <puiterwijk@gmail.com>
+Gerald Turner <gturner@unzane.com>
 
 REQUIREMENTS:
 
