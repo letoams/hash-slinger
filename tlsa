@@ -452,6 +452,10 @@ if __name__ == '__main__':
 	if args.host[-1] != '.':
 		args.host += '.'
 
+	if args.port == "25":
+		print >> sys.stdout, 'STARTTLS on port 25 is not yet supported'
+		sys.exit(1)
+
 	global resolvconf
 	if args.resolvconf:
 		if os.path.isfile(args.resolvconf):
