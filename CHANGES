@@ -6,6 +6,7 @@ v2.6 (Jan 2, 2015))
 - sshfp: Support for draft-moonesamy-sshfp-ed25519-01 [Gerald Turner]
 - tlsa: New option --rootkey and --dlvkey [Paul]
 - tlsa: Try to find rootkey in various locations in achor or key format [Paul]
+- tlsa: abort unsupported STARTTLS on port 25 (rhbz#1010276) [Paul]
 - ipseckey: new command for generating RFC-4025 IPSECKEY records [Paul]
 
 v2.5 (Jan 14, 2014)
