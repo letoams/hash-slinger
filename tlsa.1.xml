@@ -56,7 +56,7 @@ to generate TLSA records. Currently. tlsa has no AXFR support for en-mass TLSA r
   </listitem>
   </varlistentry>
   <varlistentry>
-  <term><option>---protocol</option> tcp | udp | sctp</term>
+  <term><option>--protocol</option> tcp | udp | sctp</term>
   <listitem>
 <para>Use a specific transport protocol (default: tcp)</para>
   </listitem>
