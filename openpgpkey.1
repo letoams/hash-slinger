@@ -31,7 +31,7 @@
 openpgpkey \- Create and verify RFC\-TBD OPENPGPKEY DNS records
 .SH "SYNTAX"
 .PP
-openpgpkey [\fB\-h\fR] [\fB\-\-verify\fR] [\fB\-create\fR] [\fB\-\-version\fR] [\fB\-\-insecure\fR] [\fB\-\-resolv\&.conf /PATH/TO/RESOLV\&.CONF\fR] [\fB\-\-output {rfc,generic,both}\fR]
+openpgpkey [\fB\-h\fR] [\fB\-\-fetch\fR] [\fB\-\-verify\fR] [\fB\-create\fR] [\fB\-\-version\fR] [\fB\-\-insecure\fR] [\fB\-\-resolv\&.conf /PATH/TO/RESOLV\&.CONF\fR] [\fB\-\-output {rfc,generic,both}\fR]
 \fIuser@domain\fR
 .SH "DESCRIPTION"
 .PP
@@ -41,6 +41,11 @@ to output the openpgpkey data in Generic Record (RFC\-3597) format\&. Records ar
 .PP
 Verification of OPENPGPKEY records is done by comparing the keyid and fingerprint of the OPENPGPKEY obtained from DNS with the version in the local GnuPG keychain\&.
 .SH "OPTIONS"
+.PP
+\fB\-\-fetch\fR
+.RS 4
+Fetch an OPENPGPKEY record
+.RE
 .PP
 \fB\-\-create\fR
 .RS 4
@@ -73,20 +78,22 @@ none known
 .PP
 typical usage:
 .PP
+openpgpkey \-\-fetch paul@nohats\&.ca > paul\&.pubkey
+.PP
 openpgpkey \-\-verify paul@nohats\&.ca
 .PP
 openpgpkey \-\-create paul@nohats\&.ca
 .SH "SEE ALSO"
 .PP
-draft\-wouters\-dane\-openpgp
+draft\-ietf\-dane\-openpgpkey
 .PP
 \m[blue]\fBhttp://people\&.redhat\&.com/pwouters/hash\-slinger/\fR\m[]
 .SH "AUTHORS"
 .PP
-Paul Wouters <paul@nohats\&.ca>
+Paul Wouters <pwouters@redhat\&.com>
 .SH "COPYRIGHT"
 .PP
-Copyright 2014
+Copyright 2014\-2015
 .PP
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version\&. See <\m[blue]\fBhttp://www\&.fsf\&.org/copyleft/gpl\&.txt\fR\m[]>\&.
 .PP

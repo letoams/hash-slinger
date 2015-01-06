@@ -55,6 +55,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Create and verify OPENPGPKEY records.', epilog='For bugs. see paul@nohats.ca')
 
 	parser.add_argument('--verify','-v', action='store_true', help='Verify an OPENPGPKEY record, exit 0 when all records are matched, exit 1 on error.')
+	parser.add_argument('--fetch','-f', action='store_true', help='Fetch an OPENPGPKEY record, and show it in ascii armor on stdout')
 
 	parser.add_argument('--create','-c', action='store_true', help='Create an OPENPGKEY record')
 	parser.add_argument('--version', action='version', version='openpgpkey version: %s'%VERSION, help='show version and exit')
@@ -74,7 +75,7 @@ if __name__ == '__main__':
 	if args.verify and args.create:
 		sys.exit("openpgpkey: must specify --create or --verify")
 
-	if args.verify:
+	if args.verify or args.fetch:
 		# unbound setup, only for verify
 		global ctx
 		ctx = unbound.ub_ctx()
@@ -125,8 +126,21 @@ if __name__ == '__main__':
 		gpgnet.decode_errors = 'ignore'
 		gpgdisk = gnupg.GPG()
 		gpgdisk.decode_errors = 'ignore'
+
 		for openpgpkey in openpgpkeys:
 			import_result = gpgnet.import_keys(openpgpkey)
+			if args.fetch:
+				pubkey = gpgnet.export_keys(args.email)
+				pubkey = pubkey.replace("Version:","Comment: %s key obtained from DNS\nVersion:"%args.email)
+				if args.insecure:
+					pubkey = pubkey.replace("Version:","Comment: NOT VALIDATED BY DNSSEC\nVersion:")
+				else:
+					pubkey = pubkey.replace("Version:","Comment: key transfer was protected by DNSSEC\nVersion:")
+				print pubkey
+
+		if args.fetch:
+			sys.exit(0)
+
 		received_keys = gpgnet.list_keys() 
 		disk_keys = gpgdisk.list_keys()
 		for pkey in received_keys:

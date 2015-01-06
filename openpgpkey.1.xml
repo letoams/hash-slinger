@@ -17,7 +17,8 @@
 <!-- body begins here -->
 
 <refsect1 id='syntax'><title>SYNTAX</title>
-<para>openpgpkey [<option>-h</option>] [<option>--verify</option>] [<option>-create</option>] [<option>--version</option>] 
+<para>openpgpkey [<option>-h</option>] [<option>--fetch</option>] [<option>--verify</option>]
+[<option>-create</option>] [<option>--version</option>] 
            [<option>--insecure</option>]
            [<option>--resolv.conf /PATH/TO/RESOLV.CONF</option>] 
            [<option>--output {rfc,generic,both}</option>]
@@ -38,6 +39,12 @@ email address associated with it from the user's local GnuPG keychain.
 
 <refsect1 id='options'><title>OPTIONS</title>
 <variablelist remap='TP'>
+  <varlistentry>
+  <term><option>--fetch</option> </term>
+  <listitem>
+<para>Fetch an OPENPGPKEY record</para> 
+  </listitem>
+  </varlistentry>
   <varlistentry>
   <term><option>--create</option> </term>
   <listitem>
@@ -78,6 +85,8 @@ email address associated with it from the user's local GnuPG keychain.
 <refsect1 id='examples'><title>EXAMPLES</title>
 <para>typical usage:</para>
 
+<para>openpgpkey --fetch paul@nohats.ca > paul.pubkey</para>
+
 <para>openpgpkey --verify paul@nohats.ca</para>
 
 <para>openpgpkey --create paul@nohats.ca</para>
@@ -86,16 +95,17 @@ email address associated with it from the user's local GnuPG keychain.
 
 <refsect1 id='see_also'><title>SEE ALSO</title>
 
-<para>draft-wouters-dane-openpgp</para>
+<para>draft-ietf-dane-openpgpkey</para>
+
 <para><ulink url='http://people.redhat.com/pwouters/hash-slinger/'>http://people.redhat.com/pwouters/hash-slinger/</ulink></para>
 </refsect1>
 
 <refsect1 id='authors'><title>AUTHORS</title>
-<para>Paul Wouters &lt;paul@nohats.ca&gt;</para>
+<para>Paul Wouters &lt;pwouters@redhat.com&gt;</para>
 </refsect1>
 
 <refsect1 id='copyright'><title>COPYRIGHT</title>
-<para>Copyright 2014</para>
+<para>Copyright 2014-2015</para>
 
 <para>This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
