@@ -1,0 +1,76 @@
+'\" t
+.\"     Title: ipseckey
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: January 5, 2015
+.\"    Manual: Internet / DNS
+.\"    Source: Paul Wouters
+.\"  Language: English
+.\"
+.TH "IPSECKEY" "1" "January 5, 2015" "Paul Wouters" "Internet / DNS"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+ipseckey \- Generate IPSECKEY records on libreswan IPsec servers
+.SH "SYNTAX"
+.PP
+ipseckey
+.SH "DESCRIPTION"
+.PP
+ipseckey generates RFC\-4025 IPSECKEY DNS records based on the public key of the IPsec server\&. Supported IPsec software is libreswan and some versions of openswan (depending on its implementation of showhostkey)\&. The record is displayed will have the label of the hostname\&. This can be manually changed\&.
+.PP
+(TODO: allow specifying \-\-hostname and allow \-\-reverse for creating in\-addr\&.arpa\&. entries)
+.SH "OPTIONS"
+.PP
+\fB\-h / \-\-help\fR
+.RS 4
+Output help information and exit\&.
+.RE
+.PP
+\fB\-v / \-\-version\fR
+.RS 4
+Output version information and exit\&.
+.RE
+.SH "FILES"
+.PP
+The NSS IPsec database in
+/etc/ipsec\&.d/*\&.db
+or for older openswan without NSS
+/etc/ipsec\&.secrets
+.SH "REQUIREMENTS"
+.PP
+ipseckey MUST be run on the IPsec gateway itself because unlike TLS, IPsec servers do not present their public RSA key any client\&. Currently, only libreswan IPsec is supported (\m[blue]\fBhttps://libreswan\&.org\fR\m[]) although some versions of openswan might work as well\&. Root access is needed because the public key is pulled from /etc/ipsec\&.secrets which can contain secrets and is therefor only readable by root (even though with libreswan, ipsec\&.secrets does not contain the any private RSA keys)
+.SH "BUGS"
+.PP
+Some other IPsec software is not yet supported
+.SH "SEE ALSO"
+.PP
+\fBipsec_showhostkey\fR(8)
+and RFC\-4025
+.SH "AUTHORS"
+.PP
+Paul Wouters <pwouters@redhat\&.com>
+.SH "COPYRIGHT"
+.PP
+Copyright 2015 Paul Wouters
+.PP
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version\&. See <\m[blue]\fBhttp://www\&.fsf\&.org/copyleft/gpl\&.txt\fR\m[]>\&.
+.PP
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE\&. See the GNU General Public License (file COPYING in the distribution) for more details\&.
