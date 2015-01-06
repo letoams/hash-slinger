@@ -1,8 +1,12 @@
-v2.6 (Jan 2, 2015))
+v2.6 (Jan 6, 2015))
 - openpgpkey: Added --fetch option to fetch a public key from DNS [Paul]
 - openpgpkey: Update rrtype from private use to IANA allocation (#61) [Paul]
 - openpgpkey: Remove no longer needed --rrtype option [Paul]
 - openpgpkey: Ignore uft-8/iso-8859-1 encoding errors in keyring data [Paul]
+- openpgpkey: Add --uid option to override id check in received key data [Paul]
+- openpgpkey: fix 0x99 (') character problems in base64 [Paul]
+- openpgpkey: Fix OPENPGPKEY native base64 output to be correct [Paul]
+
 - sshfp: Support for RFC 6594 [Gerald Turner]
 - sshfp: Support for draft-moonesamy-sshfp-ed25519-01 [Gerald Turner]
 - tlsa: New option --rootkey and --dlvkey [Paul]
