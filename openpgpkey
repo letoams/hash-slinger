@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
 		if args.rootanchor:
 			if os.path.isfile(args.rootanchor):
-				resolvconf = args.rootanchor
+				rootanchor = args.rootanchor
 			else:
 				print >> sys.stdout, 'openpgpkey: %s is not a file. Unable to use it as rootanchor' % args.rootanchor
 				sys.exit(1)
