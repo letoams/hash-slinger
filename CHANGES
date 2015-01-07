@@ -1,3 +1,6 @@
+v2.7 (unreleased)
+- openpgpkey: fix --rootanchor option handling [Ondřej Surý]
+
 v2.6 (Jan 6, 2015))
 - openpgpkey: Added --fetch option to fetch a public key from DNS [Paul]
 - openpgpkey: Update rrtype from private use to IANA allocation (#61) [Paul]
