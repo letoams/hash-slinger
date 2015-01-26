@@ -169,7 +169,8 @@ def process_records(data, hostnames):
 		if record.startswith("#") or not record:
 			continue
 		try:
-			(host, keytype, key) = record.split(" ")
+			# Ignore optionnal 4th column "root@localhost"
+			(host, keytype, key) = record.split(" ")[:3]
 		except ValueError:
 			if not quiet:
 				print >> sys.stdout, "Print unable to read record '%s'" % record
