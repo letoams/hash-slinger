@@ -65,6 +65,7 @@ if __name__ == '__main__':
 	parser.add_argument('email', metavar="email")
 
 	parser.add_argument('--uid', action='store', default='', help='override the uid (email address) within the key')
+	parser.add_argument('--keyid', action='store', default='', help='specify key by keyid')
 
 	parser.add_argument('--debug', '-d', action='store_true', help='Print details plus the result of the validation')
 	parser.add_argument('--quiet', '-q', action='store_true', help='Ignored for backwards compatibility')
@@ -98,7 +99,7 @@ if __name__ == '__main__':
 
 		if args.rootanchor:
 			if os.path.isfile(args.rootanchor):
-				rootanchor = args.rootanchor
+				resolvconf = args.rootanchor
 			else:
 				print >> sys.stdout, 'openpgpkey: %s is not a file. Unable to use it as rootanchor' % args.rootanchor
 				sys.exit(1)
@@ -130,6 +131,11 @@ if __name__ == '__main__':
 		for openpgpkey in openpgpkeys:
 			import_result = gpgnet.import_keys(openpgpkey)
 			if args.fetch:
+				if args.keyid:
+					pubkey = gpgnet.export_keys(args.keyid, minimal=True)
+					if not pubkey:
+						print >> sys.stderr, 'openpgpkey: Requested keyid not present in received OpenPGP data'
+						sys.exit(1)
 				if args.uid:
 					pubkey = gpgnet.export_keys(args.uid, minimal=True)
 					if not pubkey:
@@ -137,9 +143,8 @@ if __name__ == '__main__':
 						for id in  gpgnet.list_keys()[0]['uids']:
 							print >> sys.stderr, "# %s"%id
 						sys.exit(1)
-				else:
+				if not args.uid and not args.keyid:
 					pubkey = gpgnet.export_keys(args.email, minimal=True)
-				if not pubkey:
 					print >> sys.stderr, 'openpgpkey: Received OpenPGP data does not contain a key with keyid %s'%args.email
 					print >> sys.stderr, '(add --uid <uid> to override with any of the below received uids)'
 					for id in  gpgnet.list_keys()[0]['uids']:
@@ -182,27 +187,43 @@ if __name__ == '__main__':
 	else: # we want to create
 		gpgdisk = gnupg.GPG()
 		gpgdisk.decode_errors = 'ignore'
-		disk_keys = gpgdisk.list_keys()
 		found = False
-		for pgpkey in disk_keys:
-			for uid in pgpkey["uids"]:
-				if "<%s>"%args.email in uid:
-					found = True
-					if args.debug:
-						print >> sys.stderr,  "Found matching KeyID: %s (%s) for %s"%(pgpkey["keyid"], pgpkey["fingerprint"], uid)
-					ekey = gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=False)
-					ekey64 = "".join(gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=True).split("\n")[2:-3])
-					user,domain = args.email.split("@")
-					euser = sha224(user).hexdigest()
-
-					if args.output == "rfc":
-						print "%s._openpgpkey.%s. IN OPENPGPKEY %s"%(euser,domain,ekey64)
-					if args.output ==  "generic":
-						if args.debug:
-							print "Length for generic record is %s"%len(ekey)
-						print "%s._openpgpkey.%s. IN TYPE61 \# %s %s"%(euser,domain,len(ekey),asctohex(ekey))
+		# if we have the keyid, use that
+		if args.keyid:
+			ekey = gpgdisk.export_keys(args.keyid,minimal=True, secret=False, armor=False)
+			if ekey:
+				found = True
+		# else find key
 		if not found:
-			sys.exit("No key found containing the email address '%s' in the keyid(s)"%args.email)
-		
+			disk_keys = gpgdisk.list_keys()
+			for pgpkey in disk_keys:
+				for uid in pgpkey["uids"]:
+					if "<%s>"%args.email in uid:
+						if args.debug:
+							print >> sys.stderr,  "Found matching KeyID: %s (%s) for %s"%(pgpkey["keyid"], pgpkey["fingerprint"], uid)
+						ekey = gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=False)
+						found = True
+		# give up
+		if not found:
+			errt = "No key found for "
+			if args.email:
+				errt += "email address %s "%args.email
+			if args.uid:
+				errt += "or uid %s "%args.uid
+			if args.keyid:
+				errt += "or keyid %s "%args.keyid
+			sys.exit(errt)
 
+		# show it
+		ekey64 = "".join(gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=True).split("\n")[2:-3])
+		user,domain = args.email.split("@")
+		euser = sha224(user).hexdigest()
+
+		if args.output == "rfc" or args.output == "both":
+			print "%s._openpgpkey.%s. IN OPENPGPKEY %s"%(euser,domain,ekey64)
+		if args.output ==  "generic" or args.output == "both":
+			if args.debug:
+				print "Length for generic record is %s"%len(ekey)
+			print "%s._openpgpkey.%s. IN TYPE61 \# %s %s"%(euser,domain,len(ekey),asctohex(ekey))
+		
 

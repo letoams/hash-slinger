@@ -28,7 +28,8 @@
            [<option>--insecure</option>]
            [<option>--resolv.conf /PATH/TO/RESOLV.CONF</option>] 
            [<option>--output {rfc,generic,both}</option>]
-           [<option>--uid &lt;keyid&gt;</option>]
+           [<option>--uid &lt;uid&gt;</option>]
+           [<option>--keyid &lt;keyid&gt;</option>]
            <emphasis remap='I'>user@domain</emphasis>
 
 <!-- .br -->
