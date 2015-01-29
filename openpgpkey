@@ -220,10 +220,12 @@ if __name__ == '__main__':
 		euser = sha224(user).hexdigest()
 
 		if args.output == "rfc" or args.output == "both":
+			print "; keyid: %s"%(pgpkey["keyid"])
 			print "%s._openpgpkey.%s. IN OPENPGPKEY %s"%(euser,domain,ekey64)
 		if args.output ==  "generic" or args.output == "both":
 			if args.debug:
 				print "Length for generic record is %s"%len(ekey)
+			print "; keyid: %s"%(pgpkey["keyid"])
 			print "%s._openpgpkey.%s. IN TYPE61 \# %s %s"%(euser,domain,len(ekey),asctohex(ekey))
 		
 
