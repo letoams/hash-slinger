@@ -1,5 +1,7 @@
 v2.7 (unreleased)
+- openpgpkey: Add --keyid option to select key on keyid [Paul]
 - openpgpkey: fix --rootanchor option handling [Ondřej Surý]
+- openpgpkey: print keyid as bind zone style comment [Carsten Strotmann]
 - sshfp: Ignore 4th column in known_hosts [Jean-Michel Nirgal Vourgère]
 
 v2.6 (Jan 6, 2015))
