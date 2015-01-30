@@ -33,3 +33,9 @@ M2Crypto	http://chandlerproject.org/Projects/MeTooCrypto
 unbound-python	http://www.unbound.net/
 ssh-keygen	from openssh
 gpg		from gnupg
+
+NOTE: There is a another package called python-gnupg at
+https://github.com/isislovecruft/python-gnupg that is
+available on FreeBSD. This is NOT the same package and
+will not work.
+
