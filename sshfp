@@ -166,7 +166,7 @@ def process_records(data, hostnames):
 	global digests
 	all_records = []
 	for record in data.split("\n"):
-		if record.startswith("#") or not record:
+		if record.startswith("#") or record.startswith("@") or not record:
 			continue
 		try:
 			# Ignore optionnal 4th column "root@localhost"
