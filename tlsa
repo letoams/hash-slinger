@@ -143,7 +143,8 @@ def getRecords(hostname, rrtype='A', secure=True):
 			unbound.ub_ctx_trustedkeys(ctx,ROOTKEY)
 	if os.path.isfile(DLVKEY):
 		ctx.set_option("dlv-anchor-file:", DLVKEY)
-	# Use the local cache
+	# Use the local cache and emulate /etc/hosts
+	ctx.hosts("/etc/hosts")
 	if resolvconf and os.path.isfile(resolvconf):
 		ctx.resolvconf(resolvconf)
 
@@ -406,7 +407,7 @@ if __name__ == '__main__':
 	parser.add_argument('-4', '--ipv4', dest='ipv4', action='store_true',help='use ipv4 networking only')
 	parser.add_argument('-6', '--ipv6', dest='ipv6', action='store_true',help='use ipv6 networking only')
 	parser.add_argument('--insecure', action='store_true', default=False, help='Allow use of non-dnssec secured answers')
-	parser.add_argument('--resolvconf', metavar='/PATH/TO/RESOLV.CONF', action='store', default='', help='Use a recursive resolver listed in a resolv.conf file (default: /etc/resolv.conf)')
+	parser.add_argument('--resolvconf', metavar='/PATH/TO/RESOLV.CONF', action='store', default='/etc/resolv.conf', help='Use a recursive resolver listed in a resolv.conf file (default: /etc/resolv.conf)')
 	parser.add_argument('host', metavar="hostname")
 
 	parser.add_argument('--port', '-p', action='store', default='443', help='The port, or \'*\' where running TLS is located (default: %(default)s).')
@@ -463,8 +464,6 @@ if __name__ == '__main__':
 		else:
 			print >> sys.stdout, '%s is not a file. Unable to use it as resolv.conf' % args.resolvconf
 			sys.exit(1)
-	else:
-		resolvconf = None
 
 	# not operations are fun!
 	secure = not args.insecure
