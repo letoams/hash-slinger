@@ -100,7 +100,7 @@ if __name__ == '__main__':
 			try:
 				ctx.add_ta_file(rootanchor)
 			except:
-				unbound.ub_ctx_trustedkeys(ctx,rootkey)
+				unbound.ub_ctx_trustedkeys(ctx,rootanchor)
 
 		if args.resolvconf:
 			if os.path.isfile(args.resolvconf):
