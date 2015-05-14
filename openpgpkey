@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! env python2
 
 # openpgpkey: create OPENPGPKEY DNS record from a key in your keychain.
 
@@ -13,7 +13,7 @@ import sys
 import os
 import gnupg
 import unbound
-from hashlib import sha224
+from hashlib import sha256
 import tempfile
 import shutil
 
@@ -33,7 +33,7 @@ def getOPENPGPKEY(email,insecure_ok):
 	except:
 		sys.exit("Invalid email syntax")
 
-	keyname = "%s._openpgpkey.%s"%(sha224(username).hexdigest() ,domainname)
+	keyname = "%s._openpgpkey.%s"%(sha256(username).hexdigest()[0:56] ,domainname)
 
 	status, result = ctx.resolve(keyname, OPENPGPKEY)
 	if status == 0 and result.havedata:
@@ -217,7 +217,7 @@ if __name__ == '__main__':
 		# show it
 		ekey64 = "".join(gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=True).split("\n")[2:-3])
 		user,domain = args.email.split("@")
-		euser = sha224(user).hexdigest()
+		euser = sha256(user).hexdigest()[0:56]
 
 		if args.output == "rfc" or args.output == "both":
 			print "; keyid: %s"%(pgpkey["keyid"])
