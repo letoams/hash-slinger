@@ -33,7 +33,7 @@ def getOPENPGPKEY(email,insecure_ok):
 	except:
 		sys.exit("Invalid email syntax")
 
-	keyname = "%s._openpgpkey.%s"%(sha256(username).hexdigest()[0:56] ,domainname)
+	keyname = "%s._openpgpkey.%s"%(sha256(username.lower()).hexdigest()[0:56] ,domainname)
 
 	status, result = ctx.resolve(keyname, OPENPGPKEY)
 	if status == 0 and result.havedata:
@@ -212,7 +212,7 @@ if __name__ == '__main__':
 		# show it
 		ekey64 = "".join(gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=True).split("\n")[2:-3])
 		user,domain = args.email.split("@")
-		euser = sha256(user).hexdigest()[0:56]
+		euser = sha256(user.lower()).hexdigest()[0:56]
 
 		if args.output == "rfc" or args.output == "both":
 			print "; keyid: %s"%(pgpkey["keyid"])
