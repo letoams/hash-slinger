@@ -33,7 +33,7 @@ def getOPENPGPKEY(email,insecure_ok):
 	global ctx
 
 	try:
-		username, domainname = email.split("@")
+		username, domainname = email.lower().split("@")
 	except:
 		sys.exit("Invalid email syntax")
 
@@ -215,7 +215,7 @@ if __name__ == '__main__':
 
 		# show it
 		ekey64 = "".join(gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=True).split("\n")[2:-3])
-		user,domain = args.email.split("@")
+		user,domain = args.email.lower().split("@")
 		euser = sha256trunc(user)
 
 		if args.output == "rfc" or args.output == "both":
