@@ -1,6 +1,6 @@
 LICENSE: GPLv2+, see COPYING
 
-This pacakge contains various tools to generate special DNS records
+This package contains various tools to generate special DNS records
 
 sshfp		Generate RFC-4255 SSHFP DNS records from known_hosts
 		files or ssh-keyscan
