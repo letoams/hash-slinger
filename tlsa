@@ -452,8 +452,9 @@ if __name__ == '__main__':
 
 	if args.host[-1] != '.':
 		args.host += '.'
+	snihost = args.host[0:-1]
 
-	if args.port == "25":
+	if args.port == "25" and not args.certificate:
 		print >> sys.stdout, 'STARTTLS on port 25 is not yet supported'
 		sys.exit(1)
 
@@ -531,6 +532,15 @@ if __name__ == '__main__':
 				else:
 					sock = None
 				connection = SSL.Connection(ctx, sock=sock)
+				try:
+					
+					connection.set_tlsext_host_name(snihost)
+					if(args.debug):
+						print 'Did set servername %s' % snihost
+				except AttributeError:
+					print 'Could not set SNI (old M2Crypto version?)'
+				except:
+					print 'Could not set SNI'
 				try:
 					connection.connect((str(address), int(args.port)))
 				except SSL.Checker.WrongHost, e:
@@ -670,6 +680,14 @@ if __name__ == '__main__':
 				else:
 					sock = None
 				connection = SSL.Connection(ctx, sock=sock)
+				try:
+					connection.set_tlsext_host_name(snihost)
+					if(args.debug):
+						print 'Did set servername %s' % snihost
+				except AttributeError:
+					print 'Could not set SNI (old M2Crypto version?)'
+				except:
+					print 'Could not set SNI'
 				try:
 					connection.connect((str(address), int(connection_port)))
 				except SSL.Checker.WrongHost:
