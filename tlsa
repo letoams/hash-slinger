@@ -411,6 +411,7 @@ if __name__ == '__main__':
 	parser.add_argument('host', metavar="hostname")
 
 	parser.add_argument('--port', '-p', action='store', default='443', help='The port, or \'*\' where running TLS is located (default: %(default)s).')
+	parser.add_argument('--starttls', '-t', action='store', choices=['auto', 'smtp', 'imap', 'pop3', 'ftp'], help='Protocol needs special start procedure, requires protocol name.')
 	parser.add_argument('--protocol', action='store', choices=['tcp','udp','sctp'], default='tcp', help='The protocol the TLS service is using (default: %(default)s).')
 	parser.add_argument('--only-rr', action='store_true', help='Only verify that the TLSA resource record is correct (do not check certificate)')
 	parser.add_argument('--rootkey', metavar='/PATH/TO/ROOT.KEY', action='store', help='Specify file location containing the DNSSEC root key')
@@ -454,8 +455,20 @@ if __name__ == '__main__':
 		args.host += '.'
 	snihost = args.host[0:-1]
 
-	if args.port == "25" and not args.certificate:
-		print >> sys.stdout, 'STARTTLS on port 25 is not yet supported'
+	if args.starttls == 'auto':
+		if args.port == "25":
+			args.starttls = "smtp"
+		elif args.port == "143":
+			args.starttls = "imap"
+		elif args.port == "110":
+			args.starttls = "pop3"
+		elif args.port == "21":
+			args.starttls = "ftp"
+		else:
+			print >> sys.stdout, 'Can\'t guess starttls protocol from port %s' % args.port
+			sys.exit(1)
+	elif args.port == "25" and not args.certificate and not args.starttls:
+		print >> sys.stdout, 'Port 25 without "--starttls smtp" not supported'
 		sys.exit(1)
 
 	global resolvconf
@@ -533,7 +546,6 @@ if __name__ == '__main__':
 					sock = None
 				connection = SSL.Connection(ctx, sock=sock)
 				try:
-					
 					connection.set_tlsext_host_name(snihost)
 					if(args.debug):
 						print 'Did set servername %s' % snihost
@@ -542,7 +554,13 @@ if __name__ == '__main__':
 				except:
 					print 'Could not set SNI'
 				try:
-					connection.connect((str(address), int(args.port)))
+					if args.starttls:
+						connection.connect((str(address), int(args.port)), args.starttls)
+					else:
+						connection.connect((str(address), int(args.port)))
+				except TypeError:
+					print 'Cannot connect to %s (old M2Crypto version not supporting start script?)' % address
+					continue
 				except SSL.Checker.WrongHost, e:
 					# The name on the remote cert doesn't match the hostname because we connect on IP, not hostname (as we want secure lookup)
 					pass
@@ -689,7 +707,13 @@ if __name__ == '__main__':
 				except:
 					print 'Could not set SNI'
 				try:
-					connection.connect((str(address), int(connection_port)))
+					if args.starttls:
+						connection.connect((str(address), int(connection_port)), args.starttls)
+					else:
+						connection.connect((str(address), int(connection_port)))
+				except TypeError:
+					print 'Cannot connect to %s (old M2Crypto version not supporting start script?)' % address
+					continue
 				except SSL.Checker.WrongHost:
 					pass
 				except socket.error, e:
