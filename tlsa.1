@@ -2,12 +2,12 @@
 .\"     Title: tlsa
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: January 2, 2015
+.\"      Date: December 7, 2015
 .\"    Manual: Internet / DNS
 .\"    Source: Paul Wouters
 .\"  Language: English
 .\"
-.TH "TLSA" "1" "January 2, 2015" "Paul Wouters" "Internet / DNS"
+.TH "TLSA" "1" "December 7, 2015" "Paul Wouters" "Internet / DNS"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,9 +31,7 @@
 tlsa \- Create and verify RFC\-6698 TLSA DNS records
 .SH "SYNTAX"
 .PP
-tlsa [\fB\-h\fR] [\fB\-\-verify\fR] [\fB\-create\fR] [\fB\-\-version\fR] [\fB\-4\fR] [\fB\-6\fR\fB\-\-insecure\fR] [\fB\-\-resolv\&.conf /PATH/TO/RESOLV\&.CONF\fR] [\fB\-\-port PORT\fR] [\fB\-\-protocol {tcp,udp,sctp}\fR] [\fB\-\-ponly\-rr\fR] [\fB\-\-ca\-cert /PATH/TO/CERTSTORE \fR] [\fB\-\-rootkey /PATH/TO/ROOT\&.KEY \fR] [\fB\-\-dlvkey /PATH/TO/DLV\&.KEY \fR] [\fB\-\-quiet\fR] [\fB\-\-certificate CERTIFICATE \fR] [\fB\-\-output {rfc,generic,both}\fR] [\fB\-usage {0,1,2,3} \fR
-] [\fB\-\-selector {0,1}\fR] [\fB\-mtype {0,1,2} \fR
-]
+tlsa [\fB\-h\fR] [\fB\-\-verify\fR] [\fB\-create\fR] [\fB\-\-version\fR] [\fB\-4\fR] [\fB\-6\fR\fB\-\-insecure\fR] [\fB\-\-resolv\&.conf /PATH/TO/RESOLV\&.CONF\fR] [\fB\-\-port PORT\fR] [\fB\-\-starttls {auto,smtp,imap,pop3,ftp}\fR] [\fB\-\-protocol {tcp,udp,sctp}\fR] [\fB\-\-ponly\-rr\fR] [\fB\-\-rootkey /PATH/TO/ROOT\&.KEY\fR] [\fB\-\-dlvkey /PATH/TO/DLV\&.KEY\fR] [\fB\-\-ca\-cert /PATH/TO/CERTSTORE\fR] [\fB\-\-debug\fR] [\fB\-\-quiet\fR] [\fB\-\-certificate CERTIFICATE\fR] [\fB\-\-output {rfc,generic,both}\fR] [\fB\-\-usage {0,1,2,3}\fR] [\fB\-\-selector {0,1}\fR] [\fB\-mtype {0,1,2}\fR]
 \fIhostname\fR
 .SH "DESCRIPTION"
 .PP
@@ -67,6 +65,11 @@ Specify a custom resolv\&.conf file (default: /etc/resolv\&.conf)
 Use specified port (default: 443)
 .RE
 .PP
+\fB\-\-starttls\fR auto | smtp | imap | pop3 | ftp
+.RS 4
+Start script type for protocols which need special commands to start a TLS connection\&. Supported are \*(Aqftp\*(Aq (port 21), \*(Aqsmtp\*(Aq (port 25), \*(Aqpop3\*(Aq (port 110) and \*(Aqimap\*(Aq (port 143)\&. The value \*(Aqauto\*(Aq selects the type based on the port number\&.
+.RE
+.PP
 \fB\-\-only\-rr\fR
 .RS 4
 Only print the DNS TLSA record
@@ -79,7 +82,7 @@ Use specified certificate file, instead of retrieving the certificate from the s
 .PP
 \fB\-\-ca\-cert\fR directory
 .RS 4
-Use specified directory containing CA bundles for CA validation (default:/etc/pki/tls/certs)
+Use specified directory containing CA bundles for CA validation (default: /etc/pki/tls/certs)
 .RE
 .PP
 \fB\-\-rootkey\fR filename
@@ -89,7 +92,7 @@ Use specified file to read the DNSSEC root key (in anchor or bind format)
 .PP
 \fB\-\-dlvkey\fR directory
 .RS 4
-Use specified file to read the DLV key (default:/etc/unbound/dlv\&.isc\&.org\&.key")
+Use specified file to read the DLV key (default: /etc/unbound/dlv\&.isc\&.org\&.key")
 .RE
 .PP
 \fB\-\-output\fR rfc | generic | both
@@ -97,19 +100,19 @@ Use specified file to read the DLV key (default:/etc/unbound/dlv\&.isc\&.org\&.k
 Output format of TLSA record\&. "TLSA" for rfc, "TYPE52" for generic (default: rfc)
 .RE
 .PP
-\fB\-\-usage\fR0 | 1 | 2 | 3
+\fB\-\-usage\fR 0 | 1 | 2 | 3
 .RS 4
-Usage type: public CA (0), EE match validated by public CA (1), private CA (2), private EE (3) (default:3)
+Usage type: public CA (0), EE match validated by public CA (1), private CA (2), private EE (3) (default: 3)
 .RE
 .PP
-\fB\-\-selector\fR0 | 1
+\fB\-\-selector\fR 0 | 1
 .RS 4
-The selector type describes what the type covers \- full certificate (0) or public key (1) (default:0)
+The selector type describes what the type covers \- full certificate (0) or public key (1) (default: 0)
 .RE
 .PP
-\fB\-\-mtype\fR0 | 1 | 2
+\fB\-\-mtype\fR 0 | 1 | 2
 .RS 4
-Type of the TLSA data\&. Exact match on content (0), SHA256 (1) or SHA512 (2) (default:0)
+Type of the TLSA data\&. Exact match on content (0), SHA256 (1) or SHA512 (2) (default: 0)
 .RE
 .PP
 If neither create or verify is specified, create is used\&.
