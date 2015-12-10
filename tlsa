@@ -131,7 +131,7 @@ def getVerificationErrorReason(num):
 21: "X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE",
 0:  "X509_V_OK"}[int(num)]
 
-def getRecords(hostname, rrtype='A', secure=True):
+def getRecords(hostname, rrtype='A', secure=True, noresolver=False):
 	"""Do a lookup of a name and a rrtype, returns a list of binary coded strings. Only queries for rr_class IN."""
 	global resolvconf
 	ctx = unbound.ub_ctx()
@@ -145,7 +145,7 @@ def getRecords(hostname, rrtype='A', secure=True):
 		ctx.set_option("dlv-anchor-file:", DLVKEY)
 	# Use the local cache and emulate /etc/hosts
 	ctx.hosts("/etc/hosts")
-	if resolvconf and os.path.isfile(resolvconf):
+	if resolvconf and not noresolver:
 		ctx.resolvconf(resolvconf)
 
 	if type(rrtype) == str:
@@ -160,6 +160,11 @@ def getRecords(hostname, rrtype='A', secure=True):
 	if status == 0 and result.havedata:
 		if not result.secure:
 			if secure:
+				if not noresolver and resolvconf:
+					retval = getRecords(hostname, rrtype, secure, True)
+					print >> sys.stderr, 'Warning: initial query using resolver config file was not secure (try option --resolverconf="").'
+					resolvconf = None
+					return retval
 				# The data is insecure and a secure lookup was requested
 				raise InsecureLookupException('Error: Answer was not DNSSEC-secure')
 			else:
@@ -167,6 +172,8 @@ def getRecords(hostname, rrtype='A', secure=True):
 		# If we are here the data was either secure or insecure data is accepted
 		return result.data.raw
 	else:
+		if rrtype == 52:
+			rrtype = "TLSA"
 		raise DNSLookupError('Unsuccessful DNS lookup or no data returned for rrtype %s.' % rrtype)
 
 def getHash(certificate, mtype):
@@ -478,6 +485,8 @@ if __name__ == '__main__':
 		else:
 			print >> sys.stdout, '%s is not a file. Unable to use it as resolv.conf' % args.resolvconf
 			sys.exit(1)
+	else:
+		resolvconf = None
 
 	# not operations are fun!
 	secure = not args.insecure
