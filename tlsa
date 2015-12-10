@@ -148,6 +148,10 @@ def getRecords(hostname, rrtype='A', secure=True, noresolver=False):
 	if resolvconf and not noresolver:
 		ctx.resolvconf(resolvconf)
 
+	if rrtype == 52:
+		rrtypestr = "TLSA"
+	else:
+		rrtypestr = rrtype
 	if type(rrtype) == str:
 		if 'RR_TYPE_' + rrtype in dir(unbound):
 			rrtype = getattr(unbound, 'RR_TYPE_' + rrtype)
@@ -172,9 +176,7 @@ def getRecords(hostname, rrtype='A', secure=True, noresolver=False):
 		# If we are here the data was either secure or insecure data is accepted
 		return result.data.raw
 	else:
-		if rrtype == 52:
-			rrtype = "TLSA"
-		raise DNSLookupError('Unsuccessful DNS lookup or no data returned for rrtype %s.' % rrtype)
+		raise DNSLookupError('Unsuccessful DNS lookup or no data returned for rrtype %s (%s).' % (rrtypestr, rrtype))
 
 def getHash(certificate, mtype):
 	"""Hashes the certificate based on the mtype.
