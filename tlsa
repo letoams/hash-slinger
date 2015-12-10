@@ -166,7 +166,7 @@ def getRecords(hostname, rrtype='A', secure=True, noresolver=False):
 			if secure:
 				if not noresolver and resolvconf:
 					retval = getRecords(hostname, rrtype, secure, True)
-					print >> sys.stderr, 'Warning: initial query using resolver config file was not secure (try option --resolverconf="").'
+					print >> sys.stderr, 'Warning: initial query using resolver config file was not secure (try option --resolvconf="").'
 					resolvconf = None
 					return retval
 				# The data is insecure and a secure lookup was requested
@@ -459,6 +459,12 @@ if __name__ == '__main__':
 			ROOTKEY = args.dlvkey
 		else:
 			print ("ignored nspecified non-existing dlvkey file %s"%args.dlvkey)
+
+	# check whether it's ASCII or needs to be converted into Punnycode
+	try:
+		args.host.decode('ascii')
+	except UnicodeDecodeError:
+		args.host = unicode(args.host, 'utf-8').encode("idna")
 
 	if args.host[-1] != '.':
 		args.host += '.'
