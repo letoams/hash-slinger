@@ -167,7 +167,7 @@ def getRecords(hostname, rrtype='A', secure=True):
 		# If we are here the data was either secure or insecure data is accepted
 		return result.data.raw
 	else:
-		raise DNSLookupError('Unsuccesful DNS lookup or no data returned for rrtype %s.' % rrtype)
+		raise DNSLookupError('Unsuccessful DNS lookup or no data returned for rrtype %s.' % rrtype)
 
 def getHash(certificate, mtype):
 	"""Hashes the certificate based on the mtype.
