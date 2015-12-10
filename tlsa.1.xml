@@ -65,7 +65,7 @@ to generate TLSA records. Currently. tlsa has no AXFR support for en-mass TLSA r
   <varlistentry>
   <term><option>--resolvconf</option> FILE</term>
   <listitem>
-<para>Specify a custom resolv.conf file (default: /etc/resolv.conf)</para>
+<para>Specify a custom resolv.conf file (default: /etc/resolv.conf). Pass empty value (--resolvconf="") to disable default.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
