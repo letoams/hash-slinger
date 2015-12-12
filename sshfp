@@ -125,7 +125,7 @@ def sshfp_from_file(khfile, wantedHosts):
 		sys.exit(1)
 	elif hashed_known_hosts: #only looking for some known hosts
 		for host in wantedHosts:
-			fingerprints.append(process_record(get_known_host_entry(known_hosts, host), host))
+			fingerprints.append(process_records(get_known_host_entry(known_hosts, host), host))
 	else:
 		try:
 			khfp = open(known_hosts)
@@ -284,6 +284,7 @@ def main():
 			help="scan all hosts in the known_hosts file when used with -k. When used with -s, attempt a zone transfer to obtain all A records in the domain provided")
 	parser.add_option("-d", "--trailing-dot",
 			action="store_true",
+			default=True,
 			dest="trailing_dot",
 			help="add a trailing dot to the hostname in the SSHFP records")
 	parser.add_option("-o", "--output",
@@ -354,7 +355,7 @@ def main():
 	if not quiet and port != 22:
 		print >> sys.stderr, "WARNING: non-standard port numbers are not designated in SSHFP records"
 	if not quiet and options.known_hosts and options.scan:
-		print >> sys.stderr, "WARNING: Ignoring -k option, -s was passwd"
+		print >> sys.stderr, "WARNING: Ignoring known hosts option -k , -s was passed"
 	if options.nameserver and not options.scan and not options.all_hosts:
 		print >> sys.stderr, "ERROR: Cannot specify -n without -s and -a"
 		sys.exit(1)
