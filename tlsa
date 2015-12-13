@@ -22,6 +22,7 @@ import sys
 import os
 import socket
 import unbound
+import subprocess
 import re
 from M2Crypto import X509, SSL, BIO, m2
 from binascii import a2b_hex, b2a_hex
@@ -297,7 +298,11 @@ def verifyChain(chain, verify_result, pre_exit, local):
 			if verify_result == 0: # The cert chains to a valid CA cert according to the system-certificates
 				print 'SUCCESS (Usage 1): %s matches the one mentioned in the TLSA record and chains to a valid CA certificate' % text_cert
 			else:
-				print 'FAIL (Usage 1): %s matches the one mentioned in the TLSA record but the following error was raised during PKIX validation: %s' % (text_cert, getVerificationErrorReason(verify_result))
+				if local:
+					reason = verify_result
+				else:
+					reason = getVerificationErrorReason(verify_result)
+				print 'FAIL (Usage 1): %s matches the one mentioned in the TLSA record but the following error was raised during PKIX validation: %s' % (text_cert, reason)
 				if pre_exit == 0: pre_exit = 2
 			if args.debug: print 'The matched certificate has Subject: %s' % cert.get_subject()
 		else:
@@ -317,7 +322,11 @@ def verifyChain(chain, verify_result, pre_exit, local):
 				if verify_result == 0:
 					print 'SUCCESS (Usage 0): A %s matches the one mentioned in the TLSA record and is a CA certificate' % text_chain
 				else:
-					print 'FAIL (Usage 0): A %s matches the one mentioned in the TLSA record and is a CA certificate, but the following error was raised during PKIX validation: %s' % (text_chain, getVerificationErrorReason(verify_result))
+					if local:
+						reason = verify_result
+					else:
+						reason = getVerificationErrorReason(verify_result)
+					print 'FAIL (Usage 0): A %s matches the one mentioned in the TLSA record and is a CA certificate, but the following error was raised during PKIX validation: %s' % (text_chain, reason)
 					if pre_exit == 0: pre_exit = 2
 			else:
 				print 'FAIL (Usage 0): A %s matches the one mentioned in the TLSA record but is not a CA certificate' % text_chain
@@ -344,7 +353,7 @@ def verifyChain(chain, verify_result, pre_exit, local):
 			print 'SUCCESS (usage 2): A %s (including the end-entity certificate) matches the TLSA record' % text_chain
 			if args.debug: print 'The matched certificate has Subject: %s' % cert.get_subject()
 		else:
-			print 'FAIL (usage 2): No (including the end-entity certificate) matches the TLSA record' % text_chain
+			print 'FAIL (usage 2): No %s (including the end-entity certificate) matches the TLSA record' % text_chain
 			if pre_exit == 0: pre_exit = 2
 
 	elif record.usage == 3: # EE cert MUST match
@@ -629,8 +638,16 @@ if __name__ == '__main__':
 						chain.append(X509.X509(cptr, _pyfree=1))
 					if not chain:
 						raise X509Error(Err.get_error())
-					# FIXME - don't know how to verify a local cert, always true for now
-					verify_result = True
+					# FIXME - is this possible using the library (without a call to openssl tool)?
+					cmd = ["openssl", "verify", args.certificate]
+					process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+					(stdout, stderr) = process.communicate()
+					if args.debug:
+						print >> sys.stderr, stderr
+					if stdout.endswith("OK\n"):
+						verify_result = 0
+					else:
+						verify_result = "%s%s" % (stdout, stderr)
 					pre_exit = verifyChain(chain, verify_result, pre_exit, True)
 				except Exception, e:
 					print 'Could not verify local certificate: %s.' % e
