@@ -15,6 +15,7 @@ import base64
 import time
 import hashlib
 import hmac
+import re
 # www.dnspython.org
 try:
 	import dns.resolver
@@ -257,6 +258,7 @@ def sshfp_from_dns(hosts):
 	cmd = ["ssh-keyscan", "-p", str(port), "-T", str(timeout), "-t", ",".join(algos)] + hosts
 	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	(stdout, stderr) = process.communicate()
+	stderr = re.sub("#.*\n", "", stderr) # strip scan comments
 	if not quiet:
 		print >> sys.stderr, stderr
 	khdns = stdout
@@ -289,7 +291,6 @@ def main():
 			help="scan all hosts in the known_hosts file when used with -k. When used with -s, attempt a zone transfer to obtain all A records in the domain provided")
 	parser.add_option("-d", "--trailing-dot",
 			action="store_true",
-			default=True,
 			dest="trailing_dot",
 			help="add a trailing dot to the hostname in the SSHFP records")
 	parser.add_option("-o", "--output",
