@@ -45,27 +45,23 @@ def create_sshfp(hostname, keytype, keyblob, digesttype):
 
 	if keytype == "ssh-rsa":
 		keytype = "1"
+	elif keytype == "ssh-dss":
+		keytype = "2"
+	elif "ecdsa" in keytype:
+		keytype = "3"
+	elif keytype == "ssh-ed25519":
+		# TBD http://tools.ietf.org/html/draft-moonesamy-sshfp-ed25519-01
+		keytype = "4"
 	else:
-		if keytype == "ssh-dss":
-			keytype = "2"
-		else:
-			if "ecdsa" in keytype:
-				keytype = "3"
-			else:
-				if keytype == "ssh-ed25519":
-					# TBD http://tools.ietf.org/html/draft-moonesamy-sshfp-ed25519-01
-					keytype = "4"
-				else:
-					return ""
+		return ""
 	if digesttype == "sha1":
 		digest = hashlib.sha1
 		digesttype = "1"
+	elif digesttype == "sha256":
+		digest = hashlib.sha256
+		digesttype = "2"
 	else:
-		if digesttype == "sha256":
-			digest = hashlib.sha256
-			digesttype = "2"
-		else:
-			return ""
+		return ""
 	try:
 		rawkey = base64.b64decode(keyblob)
 	except TypeError:
@@ -140,19 +136,13 @@ def sshfp_from_file(khfile, wantedHosts):
 def check_keytype(keytype, hostname):
 	global algos
 	for algo in algos:
+		if algo == "dsa": # different name in user interface and files
+			algo = "dss"
 		if algo in keytype:
 			return True
 	if not quiet:
 		print >> sys.stderr, "Could only find key type %s for %s" % (keytype, hostname)
 	return False
-
-def process_record(record, hostname, digesttype):
-	(host, keytype, key) = record.split(" ")
-	key = key.rstrip()
-	if check_keytype(keytype, hostname):
-		record = create_sshfp(hostname, keytype, key, digesttype)
-		return record
-	return ""
 
 def process_records(data, hostnames):
 	"""Process all records in a string.
