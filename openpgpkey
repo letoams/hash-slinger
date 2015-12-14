@@ -13,7 +13,7 @@ import sys
 import os
 import gnupg
 import unbound
-from hashlib import sha224
+import hashlib
 import tempfile
 import shutil
 
@@ -23,17 +23,21 @@ def asctohex(s):
     empty = '' # I use this construct because I find ''.join() too dense
     return empty.join(['%02x' % ord(c) for c in s]) # the %02 pads when needed
 
+def sha256trunc(data):
+	"""Compute SHA2-256 hash truncated to 28 octets."""
+	return hashlib.sha256(data).hexdigest()[:56]
+
 def getOPENPGPKEY(email,insecure_ok):
 	"""This function queries for an OPENPGPKEY DNS Resource Record and compares it with the local gnupg keyring"""
 
 	global ctx
 
 	try:
-		username, domainname = email.split("@")
+		username, domainname = email.lower().split("@")
 	except:
 		sys.exit("Invalid email syntax")
 
-	keyname = "%s._openpgpkey.%s"%(sha224(username).hexdigest() ,domainname)
+	keyname = "%s._openpgpkey.%s"%(sha256trunc(username), domainname)
 
 	status, result = ctx.resolve(keyname, OPENPGPKEY)
 	if status == 0 and result.havedata:
@@ -211,8 +215,8 @@ if __name__ == '__main__':
 
 		# show it
 		ekey64 = "".join(gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=True).split("\n")[2:-3])
-		user,domain = args.email.split("@")
-		euser = sha224(user).hexdigest()
+		user,domain = args.email.lower().split("@")
+		euser = sha256trunc(user)
 
 		if args.output == "rfc" or args.output == "both":
 			print "; keyid: %s"%(pgpkey["keyid"])
