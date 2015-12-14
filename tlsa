@@ -301,18 +301,27 @@ def verifyCertNameWithHostName(cert, hostname, with_msg=False):
 
 	if hostname[-1] == '.':
 		hostname = hostname[0:-1]
+	hostname = hostname.lower()
 
-	# Ugly string comparison to see if the name on the ee-cert matches with the name provided on the commandline
+	certnames = []
+	for entry in str(cert.get_subject()).lower().split("/"):
+		if entry.startswith("cn="):
+			certnames.append(entry[3:])
 	try:
-		altnames_on_cert = cert.get_ext('subjectAltName').get_value()
+		for value in re.split(", ?", cert.get_ext('subjectAltName').get_value().lower()):
+			if value.startswith("dns:"):
+				certnames.append(value[4:])
 	except:
-		altnames_on_cert = ''
-	if hostname in (str(cert.get_subject()) + altnames_on_cert):
+		pass
+	if hostname in certnames:
 		return True
-	else:
-		if with_msg:
-			print 'WARNING: Name on the certificate (Subject: %s, SubjectAltName: %s) doesn\'t match requested hostname (%s).' % (str(cert.get_subject()), altnames_on_cert, hostname)
-		return False
+	for cert in certnames:
+		if cert[0] == '*' and hostname.endswith(cert[1:]):
+			return True
+
+	if with_msg:
+		print 'WARNING: Name on the certificate (Subject: %s, SubjectAltName: %s) doesn\'t match requested hostname (%s).' % (str(cert.get_subject()), cert.get_ext('subjectAltName').get_value(), hostname)
+	return False
 
 def verifyChain(chain, verify_result, pre_exit, local):
 	if local:
