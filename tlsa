@@ -179,6 +179,39 @@ def getRecords(hostname, rrtype='A', secure=True, noresolver=False):
 	else:
 		raise DNSLookupError('Unsuccessful DNS lookup or no data returned for rrtype %s (%s).' % (rrtypestr, rrtype))
 
+# identical to Connection.connect() except for the last parameter
+def sslStartTLSConnect(connection, addr, starttls=None):
+        connection.socket.connect(addr)
+        connection.addr = addr
+        if starttls:
+            # primitive method, no error checks yet
+            if starttls == "smtp":
+                data = connection.socket.recv(500)
+                connection.socket.send("EHLO M2Crypto\r\n")
+                data = connection.socket.recv(500)
+                connection.socket.send("STARTTLS\r\n")
+                data = connection.socket.recv(500)
+            elif starttls == "imap":
+                data = connection.socket.recv(500)
+                connection.socket.send(". STARTTLS\r\n")
+                data = connection.socket.recv(500)
+            elif starttls == "ftp":
+                data = connection.socket.recv(500)
+                connection.socket.send("AUTH TLS\r\n")
+                data = connection.socket.recv(500)
+            elif starttls == "pop3":
+                data = connection.socket.recv(500)
+                connection.socket.send("STLS\r\n")
+                data = connection.socket.recv(500)
+        connection.setup_ssl()
+        connection.set_connect_state()
+        ret = connection.connect_ssl()
+        check = getattr(connection, 'postConnectionCheck', connection.clientPostConnectionCheck)
+        if check is not None:
+            if not check(connection.get_peer_cert(), connection.addr[0]):
+                raise Checker.SSLVerificationError('post connection check failed')
+        return ret
+
 def getHash(certificate, mtype):
 	"""Hashes the certificate based on the mtype.
 	The certificate should be an M2Crypto.X509.X509 object (or the result of the get_pubkey() function on said object)
@@ -682,12 +715,13 @@ if __name__ == '__main__':
 					print 'Could not set SNI'
 				try:
 					if args.starttls:
-						connection.connect((str(address), int(args.port)), args.starttls)
+						sslStartTLSConnect(connection, (str(address), int(args.port)), args.starttls)
+						#connection.connect((str(address), int(args.port)), args.starttls)
 					else:
 						connection.connect((str(address), int(args.port)))
-				except TypeError:
-					print 'Cannot connect to %s (old M2Crypto version not supporting start script?)' % address
-					continue
+				#except TypeError:
+				#	print 'Cannot connect to %s (old M2Crypto version not supporting start script?)' % address
+				#	continue
 				except SSL.Checker.WrongHost, e:
 					# The name on the remote cert doesn't match the hostname because we connect on IP, not hostname (as we want secure lookup)
 					pass
@@ -769,12 +803,13 @@ if __name__ == '__main__':
 					print 'Could not set SNI'
 				try:
 					if args.starttls:
-						connection.connect((str(address), int(connection_port)), args.starttls)
+						sslStartTLSConnect(connection, (str(address), int(connection_port)), args.starttls)
+						#connection.connect((str(address), int(connection_port)), args.starttls)
 					else:
 						connection.connect((str(address), int(connection_port)))
-				except TypeError:
-					print 'Cannot connect to %s (old M2Crypto version not supporting start script?)' % address
-					continue
+				#except TypeError:
+				#	print 'Cannot connect to %s (old M2Crypto version not supporting start script?)' % address
+				#	continue
 				except SSL.Checker.WrongHost:
 					pass
 				except socket.error, e:
