@@ -323,7 +323,7 @@ def verifyCertNameWithHostName(cert, hostname, with_msg=False):
 		print 'WARNING: Name on the certificate (Subject: %s, SubjectAltName: %s) doesn\'t match requested hostname (%s).' % (str(cert.get_subject()), cert.get_ext('subjectAltName').get_value(), hostname)
 	return False
 
-def verifyChain(chain, verify_result, pre_exit, local):
+def verifyChain(chain, verify_result, pre_exit, local, source):
 	if local:
 		text_cert = "Local certificate"
 		text_chain = "certificate in the local certificate chain"
@@ -333,22 +333,22 @@ def verifyChain(chain, verify_result, pre_exit, local):
 
 	if not verifyCertNameWithHostName(cert=chain[0], hostname=str(args.host), with_msg=True):
 		# The name on the cert doesn't match the hostname... we don't verify the TLSA record
-		print 'Caution: %s does not match hostname' % text_cert
+		print 'Caution: %s does not match hostname (%s)' % (text_cert, source)
 	if record.usage == 1: # End-host cert
 		cert = chain[0]
 		if verifyCertMatch(record, cert):
 			if verify_result == 0: # The cert chains to a valid CA cert according to the system-certificates
-				print 'SUCCESS (Usage 1): %s matches the one mentioned in the TLSA record and chains to a valid CA certificate' % text_cert
+				print 'SUCCESS (Usage 1): %s matches the one mentioned in the TLSA record and chains to a valid CA certificate (%s)' % (text_cert, source)
 			else:
 				if local:
 					reason = verify_result
 				else:
 					reason = getVerificationErrorReason(verify_result)
-				print 'FAIL (Usage 1): %s matches the one mentioned in the TLSA record but the following error was raised during PKIX validation: %s' % (text_cert, reason)
+				print 'FAIL (Usage 1): %s matches the one mentioned in the TLSA record but the following error was raised during PKIX validation (%s): %s' % (text_cert, source, reason)
 				if pre_exit == 0: pre_exit = 2
 			if args.debug: print 'The matched certificate has Subject: %s' % cert.get_subject()
 		else:
-			print 'FAIL: %s does not match the TLSA record' % text_cert
+			print 'FAIL: %s does not match the TLSA record (%s)' % (text_cert, source)
 			if pre_exit == 0: pre_exit = 2
 
 	elif record.usage == 0: # CA constraint
@@ -362,20 +362,20 @@ def verifyChain(chain, verify_result, pre_exit, local):
 		if matched:
 			if cert.check_ca():
 				if verify_result == 0:
-					print 'SUCCESS (Usage 0): A %s matches the one mentioned in the TLSA record and is a CA certificate' % text_chain
+					print 'SUCCESS (Usage 0): A %s matches the one mentioned in the TLSA record and is a CA certificate (%s)' % (text_chain, source)
 				else:
 					if local:
 						reason = verify_result
 					else:
 						reason = getVerificationErrorReason(verify_result)
-					print 'FAIL (Usage 0): A %s matches the one mentioned in the TLSA record and is a CA certificate, but the following error was raised during PKIX validation: %s' % (text_chain, reason)
+					print 'FAIL (Usage 0): A %s matches the one mentioned in the TLSA record and is a CA certificate, but the following error was raised during PKIX validation (%s): %s' % (text_chain, source, reason)
 					if pre_exit == 0: pre_exit = 2
 			else:
-				print 'FAIL (Usage 0): A %s matches the one mentioned in the TLSA record but is not a CA certificate' % text_chain
+				print 'FAIL (Usage 0): A %s matches the one mentioned in the TLSA record but is not a CA certificate (%s)' % (text_chain, source)
 				if pre_exit == 0: pre_exit = 2
 			if args.debug: print 'The matched certificate has Subject: %s' % cert.get_subject()
 		else:
-			print 'FAIL (Usage 0): No %s matches the TLSA record' % text_chain
+			print 'FAIL (Usage 0): No %s matches the TLSA record (%s)' % (text_chain, source)
 			if pre_exit == 0: pre_exit = 2
 
 	elif record.usage == 2: # Usage 2, use the cert in the record as trust anchor
@@ -392,18 +392,18 @@ def verifyChain(chain, verify_result, pre_exit, local):
 				matched = True
 				continue
 		if matched:
-			print 'SUCCESS (usage 2): A %s (including the end-entity certificate) matches the TLSA record' % text_chain
+			print 'SUCCESS (usage 2): A %s (including the end-entity certificate) matches the TLSA record (%s)' % (text_chain, source)
 			if args.debug: print 'The matched certificate has Subject: %s' % cert.get_subject()
 		else:
-			print 'FAIL (usage 2): No %s (including the end-entity certificate) matches the TLSA record' % text_chain
+			print 'FAIL (usage 2): No %s (including the end-entity certificate) matches the TLSA record (%s)' % (text_chain, source)
 			if pre_exit == 0: pre_exit = 2
 
 	elif record.usage == 3: # EE cert MUST match
 		if verifyCertMatch(record,chain[0]):
-			print 'SUCCESS (usage 3): %s matches the TLSA record' % text_cert
+			print 'SUCCESS (usage 3): %s matches the TLSA record (%s)' % (text_cert, source)
 			if args.debug: print 'The matched certificate has Subject: %s' % chain[0].get_subject()
 		else:
-			print 'FAIL (usage 3): %s does not match the TLSA record' % text_cert
+			print 'FAIL (usage 3): %s does not match the TLSA record (%s)' % (text_cert, source)
 			if pre_exit == 0: pre_exit = 2
 	return pre_exit
 
@@ -690,7 +690,7 @@ if __name__ == '__main__':
 						verify_result = 0
 					else:
 						verify_result = "%s%s" % (stdout, stderr)
-					pre_exit = verifyChain(chain, verify_result, pre_exit, True)
+					pre_exit = verifyChain(chain, verify_result, pre_exit, True, args.certificate)
 				except Exception, e:
 					print 'Could not verify local certificate: %s.' % e
 					sys.exit(0)
@@ -741,7 +741,7 @@ if __name__ == '__main__':
 				verify_result = connection.get_verify_result()
 
 				# Good, now let's verify
-				pre_exit = verifyChain(chain, verify_result, pre_exit, False)
+				pre_exit = verifyChain(chain, verify_result, pre_exit, False, address)
 				# Cleanup, just in case
 				connection.clear()
 				connection.close()
