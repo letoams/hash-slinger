@@ -23,6 +23,20 @@ def asctohex(s):
     empty = '' # I use this construct because I find ''.join() too dense
     return empty.join(['%02x' % ord(c) for c in s]) # the %02 pads when needed
 
+def createOPENPGPKEY(email, gpgdisk, keyid, output, debug):
+	ekey64 = "".join(gpgdisk.export_keys(keyid,minimal=True, secret=False, armor=True).split("\n")[2:-3])
+	user,domain = email.lower().split("@")
+	euser = sha256trunc(user)
+
+	if output == "rfc" or output == "both":
+		print "; keyid: %s" % keyid
+		print "%s._openpgpkey.%s. IN OPENPGPKEY %s" % (euser, domain, ekey64)
+	if output ==  "generic" or output == "both":
+		if debug:
+			print "Length for generic record is %s" % len(ekey)
+		print "; keyid: %s" % keyid
+		print "%s._openpgpkey.%s. IN TYPE61 \# %s %s" % (euser, domain, len(ekey), asctohex(ekey))
+
 def sha256trunc(data):
 	"""Compute SHA2-256 hash truncated to 28 octets."""
 	return hashlib.sha256(data).hexdigest()[:56]
@@ -75,7 +89,7 @@ if __name__ == '__main__':
 	parser.add_argument('--quiet', '-q', action='store_true', help='Ignored for backwards compatibility')
 
 	# default for now to generic - when more tools support OPENPGPKEY, switch the default to rfc
-	parser.add_argument('--output', '-o', action='store', default='generic', choices=['generic','rfc','both'], help='The type of output. Generic (RFC 3597, TYPE61), RFC (OPENPGPKEY) or both (default: %(default)s).')
+	parser.add_argument('--output', '-o', action='store', default='rfc', choices=['generic','rfc','both'], help='The type of output. Generic (RFC 3597, TYPE61), RFC (OPENPGPKEY) or both (default: %(default)s).')
 
 	args = parser.parse_args()
 
@@ -192,6 +206,7 @@ if __name__ == '__main__':
 			ekey = gpgdisk.export_keys(args.keyid,minimal=True, secret=False, armor=False)
 			if ekey:
 				found = True
+				createOPENPGPKEY(args.email, gpgdisk, args.keyid, args.output, args.debug)
 		# else find key
 		if not found:
 			disk_keys = gpgdisk.list_keys()
@@ -201,6 +216,7 @@ if __name__ == '__main__':
 						if args.debug:
 							print >> sys.stderr,  "Found matching KeyID: %s (%s) for %s"%(pgpkey["keyid"], pgpkey["fingerprint"], uid)
 						ekey = gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=False)
+						createOPENPGPKEY(args.email, gpgdisk, pgpkey["keyid"], args.output, args.debug)
 						found = True
 		# give up
 		if not found:
@@ -212,19 +228,3 @@ if __name__ == '__main__':
 			if args.keyid:
 				errt += "or keyid %s "%args.keyid
 			sys.exit(errt)
-
-		# show it
-		ekey64 = "".join(gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=True).split("\n")[2:-3])
-		user,domain = args.email.lower().split("@")
-		euser = sha256trunc(user)
-
-		if args.output == "rfc" or args.output == "both":
-			print "; keyid: %s"%(pgpkey["keyid"])
-			print "%s._openpgpkey.%s. IN OPENPGPKEY %s"%(euser,domain,ekey64)
-		if args.output ==  "generic" or args.output == "both":
-			if args.debug:
-				print "Length for generic record is %s"%len(ekey)
-			print "; keyid: %s"%(pgpkey["keyid"])
-			print "%s._openpgpkey.%s. IN TYPE61 \# %s %s"%(euser,domain,len(ekey),asctohex(ekey))
-		
-
