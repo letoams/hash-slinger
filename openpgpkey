@@ -144,11 +144,6 @@ if __name__ == '__main__':
 				sys.exit(1)
 		ctx.resolvconf(resolvconf)
 
-		dlvkey = "/etc/unbound/dlv.isc.org.key"
-		if os.path.isfile(dlvkey):
-			ctx.set_option("dlv-anchor-file:", dlvkey)
-
-
 		openpgpkeys = getOPENPGPKEY(args.email, args.insecure)
 		if len(openpgpkeys) == 0:
 			print >> sys.stderr, 'openpgpkey: Received nothing?'

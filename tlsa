@@ -36,7 +36,6 @@ from binascii import a2b_hex, b2a_hex
 from hashlib import sha256, sha512
 from ipaddr import IPv4Address, IPv6Address
 
-DLVKEY="/etc/unbound/dlv.isc.org.key"
 ROOTKEY="none"
 cauldron = ( "/var/lib/unbound/root.anchor", "/var/lib/unbound/root.key", "/etc/unbound/root.key" )
 for root in cauldron:
@@ -149,8 +148,6 @@ def getRecords(hostname, rrtype='A', secure=True, noresolver=False):
 			ctx.add_ta_file(ROOTKEY)
 		except:
 			unbound.ub_ctx_trustedkeys(ctx,ROOTKEY)
-	if os.path.isfile(DLVKEY):
-		ctx.set_option("dlv-anchor-file:", DLVKEY)
 	# Use the local cache and emulate /etc/hosts
 	ctx.hosts("/etc/hosts")
 	if resolvconf and not noresolver:
@@ -558,7 +555,6 @@ if __name__ == '__main__':
 	parser.add_argument('--protocol', action='store', choices=['tcp','udp','sctp'], default='tcp', help='The protocol the TLS service is using (default: %(default)s).')
 	parser.add_argument('--only-rr', action='store_true', help='Only verify that the TLSA resource record is correct (do not check certificate)')
 	parser.add_argument('--rootkey', metavar='/PATH/TO/ROOT.KEY', action='store', help='Specify file location containing the DNSSEC root key')
-	parser.add_argument('--dlvkey', metavar='/PATH/TO/DLV.KEY', action='store', help='Specify file location containing the DNSSEC root key')
 
 	if os.path.isdir("/etc/pki/tls/certs/"):
 		cadir = "/etc/pki/tls/certs/"
@@ -587,12 +583,6 @@ if __name__ == '__main__':
 			ROOTKEY = args.rootkey
 		else:
 			print ("ignored specified non-existing rootkey file %s"%args.rootkey)
-
-	if args.dlvkey:
-		if os.path.isfile(args.dlvkey):
-			ROOTKEY = args.dlvkey
-		else:
-			print ("ignored nspecified non-existing dlvkey file %s"%args.dlvkey)
 
 	# check whether it's ASCII or needs to be converted into Punnycode
 	try:
