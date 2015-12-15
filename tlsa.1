@@ -31,7 +31,7 @@
 tlsa \- Create and verify RFC\-6698 TLSA DNS records
 .SH "SYNTAX"
 .PP
-tlsa [\fB\-h\fR] [\fB\-\-verify\fR] [\fB\-create\fR] [\fB\-\-version\fR] [\fB\-4\fR] [\fB\-6\fR\fB\-\-insecure\fR] [\fB\-\-resolv\&.conf /PATH/TO/RESOLV\&.CONF\fR] [\fB\-\-port PORT\fR] [\fB\-\-starttls {auto,smtp,imap,pop3,ftp}\fR] [\fB\-\-protocol {tcp,udp,sctp}\fR] [\fB\-\-ponly\-rr\fR] [\fB\-\-rootkey /PATH/TO/ROOT\&.KEY\fR] [\fB\-\-dlvkey /PATH/TO/DLV\&.KEY\fR] [\fB\-\-ca\-cert /PATH/TO/CERTSTORE\fR] [\fB\-\-debug\fR] [\fB\-\-quiet\fR] [\fB\-\-certificate CERTIFICATE\fR] [\fB\-\-output {rfc,generic,both}\fR] [\fB\-\-usage {0,1,2,3}\fR] [\fB\-\-selector {0,1}\fR] [\fB\-mtype {0,1,2}\fR]
+tlsa [\fB\-h\fR] [\fB\-\-verify\fR] [\fB\-create\fR] [\fB\-\-version\fR] [\fB\-4\fR] [\fB\-6\fR\fB\-\-insecure\fR] [\fB\-\-resolv\&.conf /PATH/TO/RESOLV\&.CONF\fR] [\fB\-\-port PORT\fR] [\fB\-\-starttls {auto,smtp,imap,pop3,ftp}\fR] [\fB\-\-protocol {tcp,udp,sctp}\fR] [\fB\-\-ponly\-rr\fR] [\fB\-\-rootkey /PATH/TO/ROOT\&.KEY\fR] [\fB\-\-ca\-cert /PATH/TO/CERTSTORE\fR] [\fB\-\-debug\fR] [\fB\-\-quiet\fR] [\fB\-\-certificate CERTIFICATE\fR] [\fB\-\-output {rfc,generic,both}\fR] [\fB\-\-usage {0,1,2,3}\fR] [\fB\-\-selector {0,1}\fR] [\fB\-mtype {0,1,2}\fR]
 \fIhostname\fR
 .SH "DESCRIPTION"
 .PP
@@ -88,11 +88,6 @@ Use specified directory containing CA bundles for CA validation (default: /etc/p
 \fB\-\-rootkey\fR filename
 .RS 4
 Use specified file to read the DNSSEC root key (in anchor or bind format)
-.RE
-.PP
-\fB\-\-dlvkey\fR directory
-.RS 4
-Use specified file to read the DLV key (default: /etc/unbound/dlv\&.isc\&.org\&.key")
 .RE
 .PP
 \fB\-\-output\fR rfc | generic | both
