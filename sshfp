@@ -1,9 +1,26 @@
 #!/usr/bin/python
+#
 # Generate SSHFP DNS records (RFC4255) from knownhosts files or ssh-keyscan
-# Copyright 2010 by Xelerance http://www.xelerance.com/
+#
+# Copyright 2010 by Xelerance http://www.xelerance.com/ (Paul Wouters)
 # Copyright 2012 Paul Wouters <pwouters@redhat.com>
 # Copyright 2014 Gerald Turner <gturner@unzane.com>
-# License: GNU GENERAL PUBLIC LICENSE Version 2 or later
+# Copyright 2015 Jean-Michel Nirgal Vourgere <jmv_deb@nirgal.com>
+# Copyright 2015 Dirk Stoecker <github@dstoecker.de>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 VERSION = "2.6"
 
@@ -254,7 +271,7 @@ def sshfp_from_dns(hosts):
 	global port
 	global timeout
 	global algos
-	
+
 	cmd = ["ssh-keyscan", "-p", str(port), "-T", str(timeout), "-t", ",".join(algos)] + hosts
 	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	(stdout, stderr) = process.communicate()
@@ -321,7 +338,7 @@ def main():
 			action="append",
 			type="choice",
 			dest="algo",
-			choices=["dsa", "ecdsa", "ed25519", "rsa"],
+			choices=["dsa", "dss", "ecdsa", "ed25519", "rsa"],
 			default=[],
 			help="key type to fetch (may be specified more than once, default dsa,ecdsa,ed25519,rsa)")
 	parser.add_option("--digest",
@@ -349,7 +366,7 @@ def main():
 	data = ""
 	trailing = options.trailing_dot
 	timeout = options.timeout
-	algos = options.algo or ["dsa", "ecdsa", "ed25519", "rsa"]
+	algos = options.algo or ["dss", "ecdsa", "ed25519", "rsa"]
 	digests = options.digest or ["sha1", "sha256"]
 	all_hosts = options.all_hosts
 	port = options.port

@@ -23,7 +23,6 @@
            [<option>--port PORT</option>] [<option>--starttls {auto,smtp,imap,pop3,ftp}</option>] 
            [<option>--protocol {tcp,udp,sctp}</option>] [<option>--ponly-rr</option>]
            [<option>--rootkey /PATH/TO/ROOT.KEY</option>]
-           [<option>--dlvkey /PATH/TO/DLV.KEY</option>]
            [<option>--ca-cert /PATH/TO/CERTSTORE</option>]
            [<option>--debug</option>] [<option>--quiet</option>] [<option>--certificate CERTIFICATE</option>]
            [<option>--output {rfc,generic,both}</option>] [<option>--usage {0,1,2,3}</option>]
@@ -104,12 +103,6 @@ to generate TLSA records. Currently. tlsa has no AXFR support for en-mass TLSA r
   <term><option>--rootkey</option> filename</term>
   <listitem>
 <para>Use specified file to read the DNSSEC root key (in anchor or bind format)</para>
-  </listitem>
-  </varlistentry>
-  <varlistentry>
-  <term><option>--dlvkey</option> directory</term>
-  <listitem>
-<para>Use specified file to read the DLV key (default: /etc/unbound/dlv.isc.org.key")</para>
   </listitem>
   </varlistentry>
   <varlistentry>
