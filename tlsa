@@ -604,21 +604,19 @@ if __name__ == '__main__':
 		args.host += '.'
 	snihost = args.host[0:-1]
 
-	if args.starttls == 'auto':
-		if args.port == "25":
-			args.starttls = "smtp"
-		elif args.port == "143":
-			args.starttls = "imap"
-		elif args.port == "110":
-			args.starttls = "pop3"
-		elif args.port == "21":
-			args.starttls = "ftp"
-		else:
+	if args.port == "25":
+		args.starttls = "smtp"
+	elif args.port == "143":
+		args.starttls = "imap"
+	elif args.port == "110":
+		args.starttls = "pop3"
+	elif args.port == "21":
+		args.starttls = "ftp"
+
+	if args.starttls and args.starttls not in ( "smtp","imap","pop3","ftp" ):
+		if args.port not in ( "25", "143", "110", "21"):
 			print >> sys.stdout, 'Can\'t guess starttls protocol from port %s' % args.port
 			sys.exit(1)
-	elif args.port == "25" and not args.certificate and not args.starttls:
-		print >> sys.stdout, 'Port 25 without "--starttls smtp" not supported'
-		sys.exit(1)
 
 	global resolvconf
 	if args.resolvconf:
