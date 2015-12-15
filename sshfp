@@ -14,6 +14,8 @@ import optparse
 import base64
 import time
 import hashlib
+import hmac
+import re
 # www.dnspython.org
 try:
 	import dns.resolver
@@ -45,27 +47,23 @@ def create_sshfp(hostname, keytype, keyblob, digesttype):
 
 	if keytype == "ssh-rsa":
 		keytype = "1"
+	elif keytype == "ssh-dss":
+		keytype = "2"
+	elif "ecdsa" in keytype:
+		keytype = "3"
+	elif keytype == "ssh-ed25519":
+		# TBD http://tools.ietf.org/html/draft-moonesamy-sshfp-ed25519-01
+		keytype = "4"
 	else:
-		if keytype == "ssh-dss":
-			keytype = "2"
-		else:
-			if "ecdsa" in keytype:
-				keytype = "3"
-			else:
-				if keytype == "ssh-ed25519":
-					# TBD http://tools.ietf.org/html/draft-moonesamy-sshfp-ed25519-01
-					keytype = "4"
-				else:
-					return ""
+		return ""
 	if digesttype == "sha1":
 		digest = hashlib.sha1
 		digesttype = "1"
+	elif digesttype == "sha256":
+		digest = hashlib.sha256
+		digesttype = "2"
 	else:
-		if digesttype == "sha256":
-			digest = hashlib.sha256
-			digesttype = "2"
-		else:
-			return ""
+		return ""
 	try:
 		rawkey = base64.b64decode(keyblob)
 	except TypeError:
@@ -125,7 +123,7 @@ def sshfp_from_file(khfile, wantedHosts):
 		sys.exit(1)
 	elif hashed_known_hosts: #only looking for some known hosts
 		for host in wantedHosts:
-			fingerprints.append(process_record(get_known_host_entry(known_hosts, host), host))
+			fingerprints.append(process_records(get_known_host_entry(known_hosts, host), (host,)))
 	else:
 		try:
 			khfp = open(known_hosts)
@@ -140,18 +138,22 @@ def sshfp_from_file(khfile, wantedHosts):
 def check_keytype(keytype, hostname):
 	global algos
 	for algo in algos:
+		if algo == "dsa": # different name in user interface and files
+			algo = "dss"
 		if algo in keytype:
 			return True
 	if not quiet:
 		print >> sys.stderr, "Could only find key type %s for %s" % (keytype, hostname)
 	return False
 
-def process_record(record, hostname, digesttype):
-	(host, keytype, key) = record.split(" ")
-	key = key.rstrip()
-	if check_keytype(keytype, hostname):
-		record = create_sshfp(hostname, keytype, key, digesttype)
-		return record
+def check_hashed(entry, hostnames):
+	(hashtype, salt64, hash64) = entry[1:].split("|")
+	if hashtype == "1":
+		salt = base64.b64decode(salt64)
+		hash = base64.b64decode(hash64)
+		for host in hostnames:
+			if hash == hmac.new(salt, host, hashlib.sha1).digest():
+				return host
 	return ""
 
 def process_records(data, hostnames):
@@ -177,11 +179,15 @@ def process_records(data, hostnames):
 			continue
 		if "," in host:
 			host = host.split(",")[0]
-		if all_hosts or host in hostnames or host == hostnames:
+		elif host[0] == '|':
+			host = check_hashed(host, hostnames)
+		if (all_hosts and host) or host in hostnames:
 			if not check_keytype(keytype, host):
 				continue
 			for digesttype in digests:
-				all_records.append(create_sshfp(host, keytype, key, digesttype))
+				value = create_sshfp(host, keytype, key, digesttype)
+				if not value in all_records:
+					all_records.append(value)
 	if all_records:
 		all_records.sort()
 		return "\n".join(all_records)
@@ -252,6 +258,7 @@ def sshfp_from_dns(hosts):
 	cmd = ["ssh-keyscan", "-p", str(port), "-T", str(timeout), "-t", ",".join(algos)] + hosts
 	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	(stdout, stderr) = process.communicate()
+	stderr = re.sub("#.*\n", "", stderr) # strip scan comments
 	if not quiet:
 		print >> sys.stderr, stderr
 	khdns = stdout
@@ -354,7 +361,7 @@ def main():
 	if not quiet and port != 22:
 		print >> sys.stderr, "WARNING: non-standard port numbers are not designated in SSHFP records"
 	if not quiet and options.known_hosts and options.scan:
-		print >> sys.stderr, "WARNING: Ignoring -k option, -s was passwd"
+		print >> sys.stderr, "WARNING: Ignoring known hosts option -k , -s was passed"
 	if options.nameserver and not options.scan and not options.all_hosts:
 		print >> sys.stderr, "ERROR: Cannot specify -n without -s and -a"
 		sys.exit(1)

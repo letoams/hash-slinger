@@ -2,11 +2,11 @@
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
                    "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 <refentry id='tlsa'>
-<refentryinfo><date>January 2, 2015</date></refentryinfo>
+<refentryinfo><date>December 7, 2015</date></refentryinfo>
 <refmeta>
 <refentrytitle>tlsa</refentrytitle>
 <manvolnum>1</manvolnum>
-<refmiscinfo class='date'>January 2, 2015</refmiscinfo>
+<refmiscinfo class='date'>December 7, 2015</refmiscinfo>
 <refmiscinfo class='source'>Paul Wouters</refmiscinfo>
 <refmiscinfo class='manual'>Internet / DNS</refmiscinfo>
 </refmeta>
@@ -19,14 +19,15 @@
 <refsect1 id='syntax'><title>SYNTAX</title>
 <para>tlsa [<option>-h</option>] [<option>--verify</option>] [<option>-create</option>] [<option>--version</option>] 
            [<option>-4</option>] [<option>-6</option><option>--insecure</option>]
-           [<option>--resolv.conf /PATH/TO/RESOLV.CONF</option>] 
-           [<option>--port PORT</option>] [<option>--protocol {tcp,udp,sctp}</option>] [<option>--ponly-rr</option>]
-           [<option>--ca-cert /PATH/TO/CERTSTORE </option>]
-           [<option>--rootkey /PATH/TO/ROOT.KEY </option>]
-           [<option>--dlvkey /PATH/TO/DLV.KEY </option>]
-           [<option>--quiet</option>] [<option>--certificate CERTIFICATE </option>]
-           [<option>--output {rfc,generic,both}</option>] [<option>-usage {0,1,2,3} </option> ]
-           [<option>--selector {0,1}</option>] [<option>-mtype {0,1,2} </option> ]
+           [<option>--resolv.conf /PATH/TO/RESOLV.CONF</option>]
+           [<option>--port PORT</option>] [<option>--starttls {auto,smtp,imap,pop3,ftp}</option>] 
+           [<option>--protocol {tcp,udp,sctp}</option>] [<option>--ponly-rr</option>]
+           [<option>--rootkey /PATH/TO/ROOT.KEY</option>]
+           [<option>--dlvkey /PATH/TO/DLV.KEY</option>]
+           [<option>--ca-cert /PATH/TO/CERTSTORE</option>]
+           [<option>--debug</option>] [<option>--quiet</option>] [<option>--certificate CERTIFICATE</option>]
+           [<option>--output {rfc,generic,both}</option>] [<option>--usage {0,1,2,3}</option>]
+           [<option>--selector {0,1}</option>] [<option>-mtype {0,1,2}</option>]
            <emphasis remap='I'>hostname</emphasis>
 
 <!-- .br -->
@@ -64,13 +65,21 @@ to generate TLSA records. Currently. tlsa has no AXFR support for en-mass TLSA r
   <varlistentry>
   <term><option>--resolvconf</option> FILE</term>
   <listitem>
-<para>Specify a custom resolv.conf file (default: /etc/resolv.conf)</para>
+<para>Specify a custom resolv.conf file (default: /etc/resolv.conf). Pass empty value (--resolvconf="") to disable default.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
   <term><option>--port</option> PORT</term>
   <listitem>
 <para>Use specified port (default: 443)</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>--starttls</option> auto | smtp | imap | pop3 | ftp</term>
+  <listitem>
+<para>Start script type for protocols which need special commands to start a TLS connection. Supported are
+	'ftp' (port 21), 'smtp' (port 25), 'pop3' (port 110) and 'imap' (port 143). The value 'auto' selects the type
+	based on the port number.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
@@ -88,43 +97,43 @@ to generate TLSA records. Currently. tlsa has no AXFR support for en-mass TLSA r
   <varlistentry>
   <term><option>--ca-cert</option> directory</term>
   <listitem>
-<para>Use specified directory containing CA bundles for CA validation (default:/etc/pki/tls/certs)</para>
+<para>Use specified directory containing CA bundles for CA validation (default: /etc/pki/tls/certs)</para>
   </listitem>
   </varlistentry>
   <varlistentry>
   <term><option>--rootkey</option> filename</term>
   <listitem>
-<para>Use specified file to read the DNSSEC root key (in anchor or bind format) </para>
+<para>Use specified file to read the DNSSEC root key (in anchor or bind format)</para>
   </listitem>
   </varlistentry>
   <varlistentry>
   <term><option>--dlvkey</option> directory</term>
   <listitem>
-<para>Use specified file to read the DLV key (default:/etc/unbound/dlv.isc.org.key")</para>
+<para>Use specified file to read the DLV key (default: /etc/unbound/dlv.isc.org.key")</para>
   </listitem>
   </varlistentry>
   <varlistentry>
   <term><option>--output</option> rfc | generic | both </term>
   <listitem>
-<para>Output format of TLSA record. "TLSA" for rfc, "TYPE52" for generic (default: rfc) </para>
+<para>Output format of TLSA record. "TLSA" for rfc, "TYPE52" for generic (default: rfc)</para>
   </listitem>
   </varlistentry>
   <varlistentry>
-  <term><option>--usage</option>0 | 1 | 2 | 3</term>
+  <term><option>--usage</option> 0 | 1 | 2 | 3</term>
   <listitem>
-<para>Usage type: public CA (0), EE match validated by public CA (1), private CA (2), private EE (3) (default:3) </para>
+<para>Usage type: public CA (0), EE match validated by public CA (1), private CA (2), private EE (3) (default: 3) </para>
   </listitem>
   </varlistentry>
   <varlistentry>
-  <term><option>--selector</option>0 | 1</term>
+  <term><option>--selector</option> 0 | 1</term>
   <listitem>
-<para>The selector type describes what the type covers - full certificate (0) or public key (1) (default:0)</para>
+<para>The selector type describes what the type covers - full certificate (0) or public key (1) (default: 0)</para>
   </listitem>
   </varlistentry>
   <varlistentry>
-  <term><option>--mtype</option>0 | 1 | 2</term>
+  <term><option>--mtype</option> 0 | 1 | 2</term>
   <listitem>
-<para>Type of the TLSA data. Exact match on content (0), SHA256 (1) or SHA512 (2) (default:0)</para>
+<para>Type of the TLSA data. Exact match on content (0), SHA256 (1) or SHA512 (2) (default: 0)</para>
   </listitem>
   </varlistentry>
 </variablelist>

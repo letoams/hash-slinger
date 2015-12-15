@@ -4,6 +4,7 @@ v2.7 (unreleased)
 - openpgpkey: print keyid as bind zone style comment [Carsten Strotmann]
 - sshfp: Ignore 4th column in known_hosts [Jean-Michel Nirgal Vourgère]
 - tlsa: Add support for SNI, allow port 25 certs for local files [Dirk Stöcker]
+- tlsa: Support --starttls for imap, pop3, smtp and ftp [Dirk Stöcker]
 
 v2.6 (Jan 6, 2015))
 - openpgpkey: Added --fetch option to fetch a public key from DNS [Paul]
