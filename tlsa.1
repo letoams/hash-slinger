@@ -65,9 +65,9 @@ Specify a custom resolv\&.conf file (default: /etc/resolv\&.conf)\&. Pass empty 
 Use specified port (default: 443)
 .RE
 .PP
-\fB\-\-starttls\fR auto | smtp | imap | pop3 | ftp
+\fB\-\-starttls\fR no | smtp | imap | pop3 | ftp
 .RS 4
-Start script type for protocols which need special commands to start a TLS connection\&. Supported are \*(Aqftp\*(Aq (port 21), \*(Aqsmtp\*(Aq (port 25), \*(Aqpop3\*(Aq (port 110) and \*(Aqimap\*(Aq (port 143)\&. The value \*(Aqauto\*(Aq selects the type based on the port number\&.
+Start script type for protocols which need special commands to start a TLS connection\&. Supported are \*(Aqftp\*(Aq (port 21), \*(Aqsmtp\*(Aq (port 25), \*(Aqpop3\*(Aq (port 110) and \*(Aqimap\*(Aq (port 143)\&. The default selects the type based on the port number\&. The value \*(Aqno\*(Aq overrides auto detection\&.
 .RE
 .PP
 \fB\-\-only\-rr\fR
@@ -77,7 +77,7 @@ Only print the DNS TLSA record
 .PP
 \fB\-\-certificate\fR file\&.crt
 .RS 4
-Use specified certificate file, instead of retrieving the certificate from the server
+Use specified certificate file, instead of retrieving the certificate from the server\&. Can be a single cert or a complete chain\&.
 .RE
 .PP
 \fB\-\-ca\-cert\fR directory
