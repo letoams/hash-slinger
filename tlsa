@@ -618,7 +618,7 @@ if __name__ == '__main__':
 	parser.add_argument('host', metavar="hostname")
 
 	parser.add_argument('--port', '-p', action='store', default='443', help='The port, or \'*\' where running TLS is located (default: %(default)s).')
-	parser.add_argument('--starttls', '-t', action='store', choices=['auto', 'smtp', 'imap', 'pop3', 'ftp'], help='Protocol needs special start procedure, requires protocol name.')
+	parser.add_argument('--starttls', '-t', action='store', choices=['no', 'smtp', 'imap', 'pop3', 'ftp'], help='Protocol needs special start procedure, requires protocol name.')
 	parser.add_argument('--protocol', action='store', choices=['tcp','udp','sctp'], default='tcp', help='The protocol the TLS service is using (default: %(default)s).')
 	parser.add_argument('--only-rr', action='store_true', help='Only verify that the TLSA resource record is correct (do not check certificate)')
 	parser.add_argument('--rootkey', metavar='/PATH/TO/ROOT.KEY', action='store', help='Specify file location containing the DNSSEC root key')
@@ -661,19 +661,17 @@ if __name__ == '__main__':
 		args.host += '.'
 	snihost = args.host[0:-1]
 
-	if args.port == "25":
-		args.starttls = "smtp"
-	elif args.port == "143":
-		args.starttls = "imap"
-	elif args.port == "110":
-		args.starttls = "pop3"
-	elif args.port == "21":
-		args.starttls = "ftp"
-
-	if args.starttls and args.starttls not in ( "smtp","imap","pop3","ftp" ):
-		if args.port not in ( "25", "143", "110", "21"):
-			print >> sys.stdout, 'Can\'t guess starttls protocol from port %s' % args.port
-			sys.exit(1)
+	if not args.starttls:
+		if args.port == "25":
+			args.starttls = "smtp"
+		elif args.port == "143":
+			args.starttls = "imap"
+		elif args.port == "110":
+			args.starttls = "pop3"
+		elif args.port == "21":
+			args.starttls = "ftp"
+	elif args.starttls == "no":
+		args.starttls = None
 
 	global resolvconf
 	if args.resolvconf:

@@ -74,11 +74,11 @@ to generate TLSA records. Currently. tlsa has no AXFR support for en-mass TLSA r
   </listitem>
   </varlistentry>
   <varlistentry>
-  <term><option>--starttls</option> auto | smtp | imap | pop3 | ftp</term>
+  <term><option>--starttls</option> no | smtp | imap | pop3 | ftp</term>
   <listitem>
 <para>Start script type for protocols which need special commands to start a TLS connection. Supported are
-	'ftp' (port 21), 'smtp' (port 25), 'pop3' (port 110) and 'imap' (port 143). The value 'auto' selects the type
-	based on the port number.</para>
+	'ftp' (port 21), 'smtp' (port 25), 'pop3' (port 110) and 'imap' (port 143). The default selects the type
+	based on the port number. The value 'no' overrides auto detection.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
