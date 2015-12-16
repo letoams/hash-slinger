@@ -79,13 +79,13 @@ def genRecords(hostname, protocol, port, chain, output='rfc', usage=1, selector=
 	certsleft = len(chain)
 	for chaincert in chain:
 		certsleft -= 1
-		if int(usage) == 1 or int(usage) == 3:
+		if usage == 1 or usage == 3:
 			# The first cert is the end-entity cert
 			print 'Got a certificate with Subject: %s' % chaincert.get_subject()
 			cert = chaincert
 			break
 		else:
-			if (int(usage) == 0 and chaincert.check_ca()) or int(usage) == 2:
+			if (usage == 0 and chaincert.check_ca()) or usage == 2:
 				if certsleft: # don't ask for the last one
 					sys.stdout.write('Got a certificate with the following Subject:\n\t%s\nUse this as certificate to match? [y/N] ' % chaincert.get_subject())
 					input_ok = False
@@ -391,6 +391,10 @@ def getLocalChain(filename, debug):
 		verify_result = "%s%s" % (stdout, stderr)
 	return chain, verify_result
 
+def usageText(usage):
+	names = ["PKIX-CA", "PKIX-EE", "DANE-TA", "DANE-EE"]
+	return "Usage %d [%s]" % (usage, names[usage])
+
 def verifyChain(chain, verify_result, pre_exit, local, source):
 	if local:
 		text_cert = "Local certificate"
@@ -402,19 +406,20 @@ def verifyChain(chain, verify_result, pre_exit, local, source):
 	if not verifyCertNameWithHostName(cert=chain[0], hostname=str(args.host), with_msg=True):
 		# The name on the cert doesn't match the hostname... we don't verify the TLSA record
 		print 'Caution: %s does not match hostname (%s)' % (text_cert, source)
+	ut = usageText(record.usage)
 	if record.usage == 1: # End-host cert
 		chained, matched = checkChainLink((chain[0],), record)
 		if not chained:
 			print "WARN: Certificates don't chain"
 		if matched:
 			if verify_result == 0: # The cert chains to a valid CA cert according to the system-certificates
-				print 'SUCCESS (Usage 1): %s matches the one mentioned in the TLSA record and chains to a valid CA certificate (%s)' % (text_cert, source)
+				print 'SUCCESS (%s): %s matches the one mentioned in the TLSA record and chains to a valid CA certificate (%s)' % (ut, text_cert, source)
 			else:
 				if local:
 					reason = verify_result
 				else:
 					reason = getVerificationErrorReason(verify_result)
-				print 'FAIL (Usage 1): %s matches the one mentioned in the TLSA record but the following error was raised during PKIX validation (%s): %s' % (text_cert, source, reason)
+				print 'FAIL (%s): %s matches the one mentioned in the TLSA record but the following error was raised during PKIX validation (%s): %s' % (ut, text_cert, source, reason)
 				if pre_exit == 0: pre_exit = 2
 			if args.debug: print 'The matched certificate has Subject: %s' % cert.get_subject()
 		else:
@@ -434,20 +439,20 @@ def verifyChain(chain, verify_result, pre_exit, local, source):
 		if matched:
 			if cert.check_ca():
 				if verify_result == 0:
-					print 'SUCCESS (Usage 0): A %s matches the one mentioned in the TLSA record and is a CA certificate (%s)' % (text_chain, source)
+					print 'SUCCESS (%s): A %s matches the one mentioned in the TLSA record and is a CA certificate (%s)' % (ut, text_chain, source)
 				else:
 					if local:
 						reason = verify_result
 					else:
 						reason = getVerificationErrorReason(verify_result)
-					print 'FAIL (Usage 0): A %s matches the one mentioned in the TLSA record and is a CA certificate, but the following error was raised during PKIX validation (%s): %s' % (text_chain, source, reason)
+					print 'FAIL (%s): A %s matches the one mentioned in the TLSA record and is a CA certificate, but the following error was raised during PKIX validation (%s): %s' % (ut, text_chain, source, reason)
 					if pre_exit == 0: pre_exit = 2
 			else:
-				print 'FAIL (Usage 0): A %s matches the one mentioned in the TLSA record but is not a CA certificate (%s)' % (text_chain, source)
+				print 'FAIL (%s): A %s matches the one mentioned in the TLSA record but is not a CA certificate (%s)' % (ut, text_chain, source)
 				if pre_exit == 0: pre_exit = 2
 			if args.debug: print 'The matched certificate has Subject: %s' % cert.get_subject()
 		else:
-			print 'FAIL (Usage 0): No %s matches the TLSA record (%s)' % (text_chain, source)
+			print 'FAIL (%s): No %s matches the TLSA record (%s)' % (ut, text_chain, source)
 			if pre_exit == 0: pre_exit = 2
 
 	elif record.usage == 2: # Usage 2, use the cert in the record as trust anchor
@@ -458,12 +463,12 @@ def verifyChain(chain, verify_result, pre_exit, local, source):
 		if matched:
 			if not chained:
 				print "WARN: Certificates don't chain"
-			print 'SUCCESS (usage 2): A %s (including the end-entity certificate) matches the TLSA record (%s)' % (text_chain, source)
+			print 'SUCCESS (%s): A %s (including the end-entity certificate) matches the TLSA record (%s)' % (ut, text_chain, source)
 			if args.debug: print 'The matched certificate has Subject: %s' % cert.get_subject()
 		else:
 			if not chained:
 				print "FAIL: Certificates don't chain"
-			print 'FAIL (usage 2): No %s (including the end-entity certificate) matches the TLSA record (%s)' % (text_chain, source)
+			print 'FAIL (%s): No %s (including the end-entity certificate) matches the TLSA record (%s)' % (ut, text_chain, source)
 			if pre_exit == 0: pre_exit = 2
 
 	elif record.usage == 3: # EE cert MUST match
@@ -471,10 +476,10 @@ def verifyChain(chain, verify_result, pre_exit, local, source):
 		if not chained:
 			print "WARN: Certificates don't chain"
 		if matched:
-			print 'SUCCESS (usage 3): %s matches the TLSA record (%s)' % (text_cert, source)
+			print 'SUCCESS (%s): %s matches the TLSA record (%s)' % (ut, text_cert, source)
 			if args.debug: print 'The matched certificate has Subject: %s' % chain[0].get_subject()
 		else:
-			print 'FAIL (usage 3): %s does not match the TLSA record (%s)' % (text_cert, source)
+			print 'FAIL (%s): %s does not match the TLSA record (%s)' % (ut, text_cert, source)
 			if pre_exit == 0: pre_exit = 2
 	return pre_exit
 
@@ -517,11 +522,11 @@ class TLSARecord:
 			if self.getPort() != '*':
 				err.append('Port %s not a number' % self.getPort())
 		if not self.usage in [0,1,2,3]:
-			err.append('Usage: invalid (%s is not one of 0, 1, 2 or 3)' % self.usage)
+			err.append('Usage: invalid (%s is not one of 0 [PKIX-CA], 1 [PKIX-EE], 2 [DANE-TA] or 3 [DANE-EE])' % self.usage)
 		if not self.selector in [0,1]:
-			err.append('Selector: invalid (%s is not one of 0 or 1)' % self.selector)
+			err.append('Selector: invalid (%s is not one of 0 [Cert] or 1 [SPKI])' % self.selector)
 		if not self.mtype in [0,1,2]:
-			err.append('Matching Type: invalid (%s is not one of 0, 1 or 2)' % self.mtype)
+			err.append('Matching Type: invalid (%s is not one of 0 [FULL], 1 [SHA-256] or 2 [SHA-512])' % self.mtype)
 		if not self.isNameValid():
 			err.append('Name (%s) is not in the correct format: _portnumber._transportprotocol.hostname.dom.' % self.name)
 		# A certificate length of 0 is accepted
@@ -639,8 +644,8 @@ if __name__ == '__main__':
 	parser.add_argument('--output', '-o', action='store', default='rfc', choices=['generic','rfc','both'], help='The type of output. Generic (RFC 3597, TYPE52), RFC (TLSA) or both (default: %(default)s).')
 
 	# Usage of the certificate
-	parser.add_argument('--usage', '-u', action='store', type=int, default=3, choices=[0,1,2,3], help='The Usage of the Certificate for Association. \'0\' for CA, \'1\' for End Entity, \'2\' for trust-anchor, \'3\' for ONLY End-Entity match (default: %(default)s).')
-	parser.add_argument('--selector', '-s', action='store', type=int, default=0, choices=[0,1], help='The Selector for the Certificate for Association. \'0\' for Full Certificate, \'1\' for SubjectPublicKeyInfo (default: %(default)s).')
+	parser.add_argument('--usage', '-u', action='store', type=int, default=3, choices=[0,1,2,3], help='The Usage of the Certificate for Association. \'0\' for CA [PKIX-CA], \'1\' for End Entity [PKIX-EE], \'2\' for trust-anchor [DANE-TA], \'3\' for ONLY End-Entity match [DANE-EE] (default: %(default)s).')
+	parser.add_argument('--selector', '-s', action='store', type=int, default=0, choices=[0,1], help='The Selector for the Certificate for Association. \'0\' for Full Certificate [Cert], \'1\' for SubjectPublicKeyInfo [SPKI] (default: %(default)s).')
 	parser.add_argument('--mtype', '-m', action='store', type=int, default=1, choices=[0,1,2], help='The Matching Type of the Certificate for Association. \'0\' for Exact match, \'1\' for SHA-256 hash, \'2\' for SHA-512 (default: %(default)s).')
 
 	args = parser.parse_args()
@@ -696,8 +701,8 @@ if __name__ == '__main__':
 			# First, check if the first three fields have correct values.
 			if args.debug:
 				print 'Received the following record for name %s:' % record.name
-				print '\tUsage:\t\t\t\t%d (%s)' % (record.usage, {0:'CA Constraint', 1:'End-Entity Constraint + chain to CA', 2:'Trust Anchor', 3:'End-Entity'}.get(record.usage, 'INVALID'))
-				print '\tSelector:\t\t\t%d (%s)' % (record.selector, {0:'Certificate', 1:'SubjectPublicKeyInfo'}.get(record.selector, 'INVALID'))
+				print '\tUsage:\t\t\t\t%d (%s)' % (record.usage, {0:'CA Constraint [PKIX-CA]', 1:'End-Entity Constraint + chain to CA [PKIX-EE]', 2:'Trust Anchor [DANE-TA]', 3:'End-Entity [DANE-EE]'}.get(record.usage, 'INVALID'))
+				print '\tSelector:\t\t\t%d (%s)' % (record.selector, {0:'Certificate [Cert]', 1:'SubjectPublicKeyInfo [SPKI]'}.get(record.selector, 'INVALID'))
 				print '\tMatching Type:\t\t\t%d (%s)' % (record.mtype, {0:'Full Certificate', 1:'SHA-256', 2:'SHA-512'}.get(record.mtype, 'INVALID'))
 				print '\tCertificate for Association:\t%s' % record.cert
 
@@ -879,6 +884,6 @@ if __name__ == '__main__':
 				chain, verify_result = getLocalChain(args.certificate, args.debug)
 			except Exception, e:
 				print 'Could not verify local certificate: %s.' % e
-			if int(args.usage) == 0 or int(args.usage) == 1 and not verify_result:
+			if args.usage == 0 or args.usage == 1 and not verify_result:
 				print 'Following error was raised during PKIX validation: %s' % verify_result
 			genRecords(args.host, args.protocol, args.port, chain, args.output, args.usage, args.selector, args.mtype)
