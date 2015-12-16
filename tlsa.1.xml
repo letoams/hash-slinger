@@ -90,7 +90,7 @@ to generate TLSA records. Currently. tlsa has no AXFR support for en-mass TLSA r
   <varlistentry>
   <term><option>--certificate</option> file.crt</term>
   <listitem>
-<para>Use specified certificate file, instead of retrieving the certificate from the server</para>
+<para>Use specified certificate file, instead of retrieving the certificate from the server. Can be a single cert or a complete chain.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
