@@ -272,6 +272,9 @@ def sshfp_from_dns(hosts):
 	global timeout
 	global algos
 
+	if "dsa" in algos:
+		print >> sys.stderr, "WARNING: openssh has obsoleted dsa/dss keys"
+
 	cmd = ["ssh-keyscan", "-p", str(port), "-T", str(timeout), "-t", ",".join(algos)] + hosts
 	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	(stdout, stderr) = process.communicate()
@@ -338,9 +341,9 @@ def main():
 			action="append",
 			type="choice",
 			dest="algo",
-			choices=["dsa", "dsa", "ecdsa", "ed25519", "rsa"],
+			choices=["rsa", "ecdsa", "ed25519", "dsa"],
 			default=[],
-			help="key type to fetch (may be specified more than once, default dsa,ecdsa,ed25519,rsa)")
+			help="key type to fetch (may be specified more than once, default rsa,ecdsa,ed25519,dsa)")
 	parser.add_option("--digest",
 			action="append",
 			type="choice",
@@ -366,8 +369,8 @@ def main():
 	data = ""
 	trailing = options.trailing_dot
 	timeout = options.timeout
-	algos = options.algo or ["dsa", "ecdsa", "ed25519", "rsa"]
-	digests = options.digest or ["sha1", "sha256"]
+	algos = options.algo or ["rsa", "ecdsa", "ed25519"]
+	digests = options.digest or ["sha256"]
 	all_hosts = options.all_hosts
 	port = options.port
 	hostnames = ()
