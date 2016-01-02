@@ -3,6 +3,7 @@ v2.7 (unreleased)
 - openpgpkey: fix --rootanchor option handling [Ondřej Surý]
 - openpgpkey: print keyid as bind zone style comment [Carsten Strotmann]
 - sshfp: Ignore 4th column in known_hosts [Jean-Michel Nirgal Vourgère]
+- sshfp: Demote obsoleted dss/dsa keys - warn if requested [Paul]
 - tlsa: Add support for SNI, allow port 25 certs for local files [Dirk Stöcker]
 - tlsa: Support --starttls for imap, pop3, smtp and ftp [Dirk Stöcker]
 - Remove DLV which is being sunset [Paul]
