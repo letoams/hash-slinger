@@ -1,4 +1,4 @@
-v2.7 (unreleased)
+v2.7 (Jan 2, 2015)
 - openpgpkey: Add --keyid option to select key on keyid [Paul]
 - openpgpkey: fix --rootanchor option handling [Ondřej Surý]
 - openpgpkey: print keyid as bind zone style comment [Carsten Strotmann]
