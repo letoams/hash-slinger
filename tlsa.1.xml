@@ -21,7 +21,7 @@
            [<option>-4</option>] [<option>-6</option><option>--insecure</option>]
            [<option>--resolv.conf /PATH/TO/RESOLV.CONF</option>]
            [<option>--port PORT</option>] [<option>--starttls {auto,smtp,imap,pop3,ftp}</option>] 
-           [<option>--protocol {tcp,udp,sctp}</option>] [<option>--ponly-rr</option>]
+           [<option>--protocol {tcp,udp,sctp}</option>] [<option>--only-rr</option>]
            [<option>--rootkey /PATH/TO/ROOT.KEY</option>]
            [<option>--ca-cert /PATH/TO/CERTSTORE</option>]
            [<option>--debug</option>] [<option>--quiet</option>] [<option>--certificate CERTIFICATE</option>]
