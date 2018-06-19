@@ -667,7 +667,7 @@ if __name__ == '__main__':
 	snihost = args.host[0:-1]
 
 	if not args.starttls:
-		if args.port == "25":
+		if args.port == "25" or args.port == "587":
 			args.starttls = "smtp"
 		elif args.port == "143":
 			args.starttls = "imap"
