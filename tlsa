@@ -882,8 +882,8 @@ if __name__ == '__main__':
 		else: # Pass the path to the certificate to the genTLSA function
 			try:
 				chain, verify_result = getLocalChain(args.certificate, args.debug)
+				if args.usage == 0 or args.usage == 1 and not verify_result:
+					print 'Following error was raised during PKIX validation: %s' % verify_result
+				genRecords(args.host, args.protocol, args.port, chain, args.output, args.usage, args.selector, args.mtype)
 			except Exception, e:
 				print 'Could not verify local certificate: %s.' % e
-			if args.usage == 0 or args.usage == 1 and not verify_result:
-				print 'Following error was raised during PKIX validation: %s' % verify_result
-			genRecords(args.host, args.protocol, args.port, chain, args.output, args.usage, args.selector, args.mtype)
