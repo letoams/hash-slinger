@@ -372,13 +372,21 @@ def getLocalChain(filename, debug):
 	"""Returns list of M2Crypto.X509.X509 objects and verification result"""
 	chain = []
 	bio = BIO.openfile(filename)
+	Err = None
 	while True:
-		cptr = m2.x509_read_pem(bio._ptr())
+		try:
+			cptr = m2.x509_read_pem(bio._ptr())
+		except Exception, e:
+			Err = e
+			break;
 		if not cptr:
 			break
 		chain.append(X509.X509(cptr, _pyfree=1))
 	if not chain:
-		raise X509Error(Err.get_error())
+		if Err:
+			raise
+		else:
+			raise Exception("Could not load %s" % filename)
 	# FIXME - is this possible using the library (without a call to openssl tool)?
 	cmd = ["openssl", "verify", filename]
 	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
