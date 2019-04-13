@@ -1,4 +1,4 @@
-v2.8 (...)
+v2.8 (April 13, 2019)
 - tlsa: add submission port (587) to starttls support [Dirk Stöcker]
 - tlsa: fixes for newer m2crypto [Dirk Stöcker]
 - tlsa: small fixes in error handling [Dirk Stöcker]

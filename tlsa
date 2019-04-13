@@ -7,7 +7,7 @@
 #
 # Copyright 2012 Pieter Lexis <pieter.lexis@os3.nl>
 # Copyright 2014 Paul Wouters <pwouters@redhat.com>
-# Copyright 2015 Dirk Stoecker <hashslinger@dstoecker.de>
+# Copyright 2015-2019 Dirk Stoecker <hashslinger@dstoecker.de>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-VERSION="2.7"
+VERSION="2.8"
 
 import sys
 import os
