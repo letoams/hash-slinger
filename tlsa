@@ -99,7 +99,7 @@ def genRecords(hostname, protocol, port, chain, output='rfc', usage=1, selector=
 						else:
 							sys.stdout.write('Please answer Y or N')
 				else:
-					print(('Using certificate with the following Subject:\n\t%s\n' % chaincert.get_subject()))
+					print('Using certificate with the following Subject:\n\t%s\n' % chaincert.get_subject())
 					cert = chaincert
 			if cert:
 				break
@@ -662,13 +662,13 @@ if __name__ == '__main__':
 		if os.path.isfile(args.rootkey):
 			ROOTKEY = args.rootkey
 		else:
-			print(("ignored specified non-existing rootkey file %s"%args.rootkey))
+			print("ignored specified non-existing rootkey file %s"%args.rootkey)
 
 	# check whether it's ASCII or needs to be converted into Punnycode
-	#try:
-	#	args.host.decode('ascii')
-	#except UnicodeDecodeError:
-	#	args.host = str(args.host, 'utf-8').encode("idna")
+	try:
+		args.host.encode('ascii')
+	except UnicodeEncodeError:
+		args.host = str(args.host.encode('idna'), 'utf-8')
 
 	if args.host[-1] != '.':
 		args.host += '.'
