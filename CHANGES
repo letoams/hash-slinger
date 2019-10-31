@@ -1,3 +1,6 @@
+v4.0 (November, 3, 2019)
+- upgrade to python version 3 [Frank Crawford]
+
 v2.8 (April 13, 2019)
 - tlsa: add submission port (587) to starttls support [Dirk Stöcker]
 - tlsa: fixes for newer m2crypto [Dirk Stöcker]
