@@ -25,14 +25,13 @@ Gerald Turner <gturner@unzane.com>
 Ondřej Surý <ondrej@sury.org>
 Jan Vcelak <jv@fcelda.cz>
 Dirk Stöcker <hashslinger@dstoecker.de>
+Frank Crawford <frank@crawford.emu.id.au>
 
 REQUIREMENTS:
 
-python-dns 	http://www.pythondns.org/
+python-dns 	http://www.dnspython.org/
 python-gnupg	http://pythonhosted.org/python-gnupg/
-python-ipaddr
-python-argparse	(for python < 2.7)
-M2Crypto	http://chandlerproject.org/Projects/MeTooCrypto
+m2crypto	http://gitlab.com/m2crypto/m2crypto/
 unbound-python	http://www.unbound.net/
 ssh-keygen	from openssh
 gpg		from gnupg
