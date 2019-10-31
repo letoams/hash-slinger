@@ -1,7 +1,7 @@
 Summary: Generate and verify various DNS records such as SSHFP, TLSA and OPENPGPKEY
 Name: hash-slinger
-Version: 2.7
-Release: 3%{?dist}
+Version: 3.0
+Release: 1%{?dist}
 License: GPLv2+
 Url:  http://people.redhat.com/pwouters/%{name}/
 Source:  http://people.redhat.com/pwouters/%{name}/%{name}-%{version}.tar.gz
