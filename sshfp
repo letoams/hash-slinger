@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Generate SSHFP DNS records (RFC4255) from knownhosts files or ssh-keyscan
 #
@@ -39,10 +39,10 @@ try:
 	import dns.query
 	import dns.zone
 except ImportError:
-	print >> sys.stderr, "sshfp requires the python-dns package from http://www.pythondns.org/"
-	print >> sys.stderr, "Fedora: yum install python-dns"
-	print >> sys.stderr, "Debian: apt-get install python-dnspython   (NOT python-dns!)"
-	print >> sys.stderr, "openSUSE: zypper in python-dnspython"
+	print("sshfp requires the python-dns package from http://www.pythondns.org/", file=sys.stderr)
+	print("Fedora: yum install python-dns", file=sys.stderr)
+	print("Debian: apt-get install python-dnspython   (NOT python-dns!)", file=sys.stderr)
+	print("openSUSE: zypper in python-dnspython", file=sys.stderr)
 	sys.exit(1)
 
 global all_hosts
@@ -57,7 +57,7 @@ global algo
 DEFAULT_KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
 
 def show_version():
-	print >> sys.stderr, "sshfp version: " + VERSION
+	print("sshfp version: " + VERSION, file=sys.stderr)
 
 def create_sshfp(hostname, keytype, keyblob, digesttype):
 	"""Creates an SSH fingerprint"""
@@ -84,7 +84,7 @@ def create_sshfp(hostname, keytype, keyblob, digesttype):
 	try:
 		rawkey = base64.b64decode(keyblob)
 	except TypeError:
-		print >> sys.stderr, "FAILED on hostname "+hostname+" with keyblob "+keyblob
+		print("FAILED on hostname "+hostname+" with keyblob "+keyblob, file=sys.stderr)
 		return "ERROR"
 	fp = digest(rawkey).hexdigest().upper()
 	# check for Reverse entries
@@ -108,10 +108,10 @@ def get_known_host_entry(known_hosts, host):
 
 	Uses the ssh-keygen utility."""
 	cmd = ["ssh-keygen", "-f", known_hosts, "-F", host]
-	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 	(stdout, stderr) = process.communicate()
 	if not quiet and stderr:
-		print >> sys.stderr, stderr
+		print(stderr, file=sys.stderr)
 	outputl = []
 	for e in stdout.split("\n"):
 		if not e.startswith("#"):
@@ -127,7 +127,7 @@ def sshfp_from_file(khfile, wantedHosts):
 	try:
 		khfp = open(known_hosts)
 	except IOError:
-		print >> sys.stderr, "ERROR: failed to open file "+ known_hosts
+		print("ERROR: failed to open file "+ known_hosts, file=sys.stderr)
 		sys.exit(1)
 	hashed_known_hosts = False
 	if khfp.readline().startswith("|1|"):
@@ -136,7 +136,7 @@ def sshfp_from_file(khfile, wantedHosts):
 
 	fingerprints = []
 	if hashed_known_hosts and all_hosts:
-		print >> sys.stderr, "ERROR: %s is hashed, cannot use with -a" % known_hosts
+		print("ERROR: %s is hashed, cannot use with -a" % known_hosts, file=sys.stderr)
 		sys.exit(1)
 	elif hashed_known_hosts: #only looking for some known hosts
 		for host in wantedHosts:
@@ -145,7 +145,7 @@ def sshfp_from_file(khfile, wantedHosts):
 		try:
 			khfp = open(known_hosts)
 		except IOError:
-			print >> sys.stderr, "ERROR: failed to open file "+ known_hosts
+			print("ERROR: failed to open file "+ known_hosts, file=sys.stderr)
 			sys.exit(1)
 		data = khfp.read()
 		khfp.close()
@@ -160,7 +160,7 @@ def check_keytype(keytype, hostname):
 		if algo in keytype:
 			return True
 	if not quiet:
-		print >> sys.stderr, "Could only find key type %s for %s" % (keytype, hostname)
+		print("Could only find key type %s for %s" % (keytype, hostname), file=sys.stderr)
 	return False
 
 def check_hashed(entry, hostnames):
@@ -192,7 +192,7 @@ def process_records(data, hostnames):
 			(host, keytype, key) = record.split(" ")[:3]
 		except ValueError:
 			if not quiet:
-				print >> sys.stdout, "Print unable to read record '%s'" % record
+				print("Print unable to read record '%s'" % record, file=sys.stdout)
 			continue
 		if "," in host:
 			host = host.split(",")[0]
@@ -227,25 +227,25 @@ def get_record(domain, qtype):
 		if qtype == "NS":
 			return str(rdata.target)
 		else:
-			print >> sys.stderr, "ERROR: error in get_record, unknown type " + qtype
+			print("ERROR: error in get_record, unknown type " + qtype, file=sys.stderr)
 			sys.exit(1)
 
 def get_axfr_record(domain, nameserver):
 	try:
 		zone = dns.zone.from_xfr(dns.query.xfr(nameserver, domain, rdtype=dns.rdatatype.AXFR))
 	except dns.exception.FormError:
-		raise dns.exception.FormError, domain
+		raise dns.exception.FormError(domain)
 	else:
 		return  zone
 
 def sshfp_from_axfr(domain, nameserver):
 	if " " in domain:
-		print >> sys.stderr, "ERROR: space in domain '"+domain+"' can't be right, aborted"
+		print("ERROR: space in domain '"+domain+"' can't be right, aborted", file=sys.stderr)
 		sys.exit(1)
 	if not nameserver:
 		nameserver = get_record(domain, "NS")
 		if not nameserver:
-			print >> sys.stderr, "WARNING: no NS record found for domain "+domain+". trying as host record instead"
+			print("WARNING: no NS record found for domain "+domain+". trying as host record instead", file=sys.stderr)
 			# better then nothing
 			return sshfp_from_dns([domain])
 	hosts = []
@@ -253,8 +253,8 @@ def sshfp_from_axfr(domain, nameserver):
 	try:
 		# print "trying axfr for "+domain+"@"+nameserver
 		axfr = get_axfr_record(domain, nameserver)
-	except dns.exception.FormError, badDomain:
-		print >> sys.stderr, "AXFR error: %s - No permission or not authorative for %s; aborting" % (nameserver, badDomain)
+	except dns.exception.FormError as badDomain:
+		print("AXFR error: %s - No permission or not authorative for %s; aborting" % (nameserver, badDomain), file=sys.stderr)
 		sys.exit(1)
 
 	for (name, ttl, rdata) in axfr.iterate_rdatas('A'):
@@ -273,14 +273,14 @@ def sshfp_from_dns(hosts):
 	global algos
 
 	if "dsa" in algos:
-		print >> sys.stderr, "WARNING: openssh has obsoleted dsa/dss keys"
+		print("WARNING: openssh has obsoleted dsa/dss keys", file=sys.stderr)
 
 	cmd = ["ssh-keyscan", "-p", str(port), "-T", str(timeout), "-t", ",".join(algos)] + hosts
-	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 	(stdout, stderr) = process.communicate()
 	stderr = re.sub("#.*\n", "", stderr) # strip scan comments
 	if not quiet:
-		print >> sys.stderr, stderr
+		print(stderr, file=sys.stderr)
 	khdns = stdout
 	return process_records(khdns, hosts)
 	
@@ -379,16 +379,16 @@ def main():
 		show_version()
 		sys.exit(0)
 	if not quiet and port != 22:
-		print >> sys.stderr, "WARNING: non-standard port numbers are not designated in SSHFP records"
+		print("WARNING: non-standard port numbers are not designated in SSHFP records", file=sys.stderr)
 	if not quiet and options.known_hosts and options.scan:
-		print >> sys.stderr, "WARNING: Ignoring known hosts option -k , -s was passed"
+		print("WARNING: Ignoring known hosts option -k , -s was passed", file=sys.stderr)
 	if options.nameserver and not options.scan and not options.all_hosts:
-		print >> sys.stderr, "ERROR: Cannot specify -n without -s and -a"
+		print("ERROR: Cannot specify -n without -s and -a", file=sys.stderr)
 		sys.exit(1)
 	if not options.scan and options.all_hosts and args:
-		print >> sys.stderr, "WARNING: -a and hosts both passed, ignoring manual host list"
+		print("WARNING: -a and hosts both passed, ignoring manual host list", file=sys.stderr)
 	if not args and (not all_hosts):
-		print >> sys.stderr, "WARNING: Assuming -a"
+		print("WARNING: Assuming -a", file=sys.stderr)
 		all_hosts = True
 
 	if options.scan and options.all_hosts:
@@ -402,7 +402,7 @@ def main():
 		data = "\n".join(datal)
 	elif options.scan:	# Scan specified hosts
 		if not args:
-			print >> sys.stderr, "ERROR: You asked me to scan, but didn't give any hosts to scan"
+			print("ERROR: You asked me to scan, but didn't give any hosts to scan", file=sys.stderr)
 			sys.exit(1)
 		data = sshfp_from_dns(args)
 	else: # known_hosts
@@ -412,13 +412,13 @@ def main():
 		try:
 			fp = open(output, "w")
 		except IOError:
-			print >> sys.stderr, "ERROR: can't open '%s'' for writing" % output
+			print("ERROR: can't open '%s'' for writing" % output, file=sys.stderr)
 			sys.exit(1)
 		else:
 			fp.write(data)
 			fp.close()
 	else:
-		print data
+		print(data)
 
 if __name__ == "__main__":
 	main()

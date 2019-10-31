@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # openpgpkey: create OPENPGPKEY DNS record from a key in your keychain.
 #
@@ -45,17 +45,17 @@ def createOPENPGPKEY(email, gpgdisk, keyid, output, debug):
 	euser = sha256trunc(user)
 
 	if output == "rfc" or output == "both":
-		print "; keyid: %s" % keyid
-		print "%s._openpgpkey.%s. IN OPENPGPKEY %s" % (euser, domain, ekey64)
+		print("; keyid: %s" % keyid)
+		print("%s._openpgpkey.%s. IN OPENPGPKEY %s" % (euser, domain, ekey64))
 	if output ==  "generic" or output == "both":
 		if debug:
-			print "Length for generic record is %s" % len(ekey)
-		print "; keyid: %s" % keyid
-		print "%s._openpgpkey.%s. IN TYPE61 \# %s %s" % (euser, domain, len(ekey), asctohex(ekey))
+			print("Length for generic record is %s" % len(ekey))
+		print("; keyid: %s" % keyid)
+		print("%s._openpgpkey.%s. IN TYPE61 \# %s %s" % (euser, domain, len(ekey), asctohex(ekey)))
 
 def sha256trunc(data):
 	"""Compute SHA2-256 hash truncated to 28 octets."""
-	return hashlib.sha256(data).hexdigest()[:56]
+	return hashlib.sha256(data.encode(encoding="utf-8")).hexdigest()[:56]
 
 def getOPENPGPKEY(email,insecure_ok):
 	"""This function queries for an OPENPGPKEY DNS Resource Record and compares it with the local gnupg keyring"""
@@ -76,7 +76,7 @@ def getOPENPGPKEY(email,insecure_ok):
 				# The data is insecure and a secure lookup was requested
 				sys.exit("Error: query data is not secured by DNSSEC - use --insecure to override")
 			else:
-				print >> sys.stderr, 'Warning: query data was not secured by DNSSEC.'
+				print('Warning: query data was not secured by DNSSEC.', file=sys.stderr)
 		# If we are here the data was either secure or insecure data is accepted
 		return result.data.raw
 	else:
@@ -122,7 +122,7 @@ if __name__ == '__main__':
 			if os.path.isfile(args.rootanchor):
 				rootanchor = args.rootanchor
 			else:
-				print >> sys.stdout, 'openpgpkey: %s is not a file. Unable to use it as rootanchor' % args.rootanchor
+				print('openpgpkey: %s is not a file. Unable to use it as rootanchor' % args.rootanchor, file=sys.stdout)
 				sys.exit(1)
 		else:
 			cauldron = ( "/var/lib/unbound/root.anchor", "/var/lib/unbound/root.key", "/etc/unbound/root.key" )
@@ -140,13 +140,13 @@ if __name__ == '__main__':
 			if os.path.isfile(args.resolvconf):
 				resolvconf = args.resolvconf
 			else:
-				print >> sys.stdout, 'openpgpkey: %s is not a file. Unable to use it as resolv.conf' % args.resolvconf
+				print('openpgpkey: %s is not a file. Unable to use it as resolv.conf' % args.resolvconf, file=sys.stdout)
 				sys.exit(1)
 		ctx.resolvconf(resolvconf)
 
 		openpgpkeys = getOPENPGPKEY(args.email, args.insecure)
 		if len(openpgpkeys) == 0:
-			print >> sys.stderr, 'openpgpkey: Received nothing?'
+			print('openpgpkey: Received nothing?', file=sys.stderr)
 			sys.exit(1)
 		fdir = tempfile.mkdtemp(".gpg","openpgpkey-","/tmp/")
 		gpgnet = gnupg.GPG(gnupghome=fdir)
@@ -158,21 +158,21 @@ if __name__ == '__main__':
 				if args.keyid:
 					pubkey = gpgnet.export_keys(args.keyid, minimal=True)
 					if not pubkey:
-						print >> sys.stderr, 'openpgpkey: Requested keyid not present in received OpenPGP data'
+						print('openpgpkey: Requested keyid not present in received OpenPGP data', file=sys.stderr)
 						sys.exit(1)
 				if args.uid:
 					pubkey = gpgnet.export_keys(args.uid, minimal=True)
 					if not pubkey:
-						print >> sys.stderr, 'openpgpkey: Requested uid not present in received OpenPGP data'
+						print('openpgpkey: Requested uid not present in received OpenPGP data', file=sys.stderr)
 						for id in  gpgnet.list_keys()[0]['uids']:
-							print >> sys.stderr, "# %s"%id
+							print("# %s"%id, file=sys.stderr)
 						sys.exit(1)
 				if not args.uid and not args.keyid:
 					pubkey = gpgnet.export_keys(args.email, minimal=True)
-					print >> sys.stderr, 'openpgpkey: Received OpenPGP data does not contain a key with keyid %s'%args.email
-					print >> sys.stderr, '(add --uid <uid> to override with any of the below received uids)'
+					print('openpgpkey: Received OpenPGP data does not contain a key with keyid %s'%args.email, file=sys.stderr)
+					print('(add --uid <uid> to override with any of the below received uids)', file=sys.stderr)
 					for id in  gpgnet.list_keys()[0]['uids']:
-						print >> sys.stderr, "# %s"%id
+						print("# %s"%id, file=sys.stderr)
 					sys.exit(1)
 
 				pubkey = pubkey.replace("Version:","Comment: %s key obtained from DNS\nVersion:"%args.email)
@@ -180,7 +180,7 @@ if __name__ == '__main__':
 					pubkey = pubkey.replace("Version:","Comment: NOT VALIDATED BY DNSSEC\nVersion:")
 				else:
 					pubkey = pubkey.replace("Version:","Comment: key transfer was protected by DNSSEC\nVersion:")
-				print pubkey
+				print(pubkey)
 
 		if args.fetch:
 			sys.exit(0)
@@ -191,11 +191,11 @@ if __name__ == '__main__':
 		disk_keys = gpgdisk.list_keys()
 		for pkey in received_keys:
 			if args.debug:
-				print >> sys.stderr, "Received from DNS: Key-ID:%s Fingerprint:%s"%(pkey["keyid"], pkey["fingerprint"])
+				print("Received from DNS: Key-ID:%s Fingerprint:%s"%(pkey["keyid"], pkey["fingerprint"]), file=sys.stderr)
 			found = False
 			for dkey in disk_keys:
 				if args.debug:
-					print >> sys.stderr, "Local disk: Key-ID:%s Fingerprint:%s"%(dkey["keyid"], dkey["fingerprint"])
+					print("Local disk: Key-ID:%s Fingerprint:%s"%(dkey["keyid"], dkey["fingerprint"]), file=sys.stderr)
 				if pkey["keyid"] == dkey["keyid"] and pkey["fingerprint"] == dkey["fingerprint"]:
 					found = True
 			if found == False:
@@ -203,8 +203,8 @@ if __name__ == '__main__':
 				sys.exit("Received key with keyid %s was not found"%pkey["keyid"])
 			else:
 				if args.debug:
-					print >> sys.stderr, "Received key with keyid %s was found"%pkey["keyid"]
-		print "All OPENPGPKEY records matched with content from the local keyring"
+					print("Received key with keyid %s was found"%pkey["keyid"], file=sys.stderr)
+		print("All OPENPGPKEY records matched with content from the local keyring")
 		shutil.rmtree(fdir)
 		sys.exit(0)
 
@@ -225,7 +225,7 @@ if __name__ == '__main__':
 				for uid in pgpkey["uids"]:
 					if "<%s>"%args.email in uid:
 						if args.debug:
-							print >> sys.stderr,  "Found matching KeyID: %s (%s) for %s"%(pgpkey["keyid"], pgpkey["fingerprint"], uid)
+							print("Found matching KeyID: %s (%s) for %s"%(pgpkey["keyid"], pgpkey["fingerprint"], uid), file=sys.stderr)
 						ekey = gpgdisk.export_keys(pgpkey["keyid"],minimal=True, secret=False, armor=False)
 						createOPENPGPKEY(args.email, gpgdisk, pgpkey["keyid"], args.output, args.debug)
 						found = True
