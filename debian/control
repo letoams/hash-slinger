@@ -2,14 +2,14 @@ Source: hash-slinger
 Section: net
 Priority: optional
 Maintainer: Paul Wouters <pwouters@redhat.com>
-Build-Depends: debhelper (>= 7.0.50~), dh-python3, python3, xmlto
+Build-Depends: debhelper (>= 7.0.50~), dh-python, python3, xmlto
 Homepage: http://people.redhat.com/pwouters/hash-slinger/
 Standards-Version: 3.8.4
 
 Package: hash-slinger
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3-dnspython, openssh-client, python3-unbound, python3-gnupg, python3-m2crypto
-XB-Python-Version: ${python3:Versions}
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3, python3-dnspython, openssh-client, python3-unbound, python3-gnupg, python3-m2crypto
+X-Python-Version: ${python3:Versions}
 Description: This pacakge contains various tools to generate special DNS records
  sshfp		Generate RFC-4255 SSHFP DNS records from known_hosts files or ssh-keyscan
  tlsa		Generate RFC-6698  TLSA DNS records via TLS
