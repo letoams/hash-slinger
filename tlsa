@@ -230,21 +230,21 @@ def sslStartTLSConnect(connection, addr, starttls=None):
             # primitive method, no error checks yet
             if starttls == "smtp":
                 data = connection.socket.recv(500)
-                connection.socket.send("EHLO M2Crypto\r\n")
+                connection.socket.send("EHLO M2Crypto\r\n".encode('ascii'))
                 data = connection.socket.recv(500)
-                connection.socket.send("STARTTLS\r\n")
+                connection.socket.send("STARTTLS\r\n".encode('ascii'))
                 data = connection.socket.recv(500)
             elif starttls == "imap":
                 data = connection.socket.recv(500)
-                connection.socket.send(". STARTTLS\r\n")
+                connection.socket.send(". STARTTLS\r\n".encode('ascii'))
                 data = connection.socket.recv(500)
             elif starttls == "ftp":
                 data = connection.socket.recv(500)
-                connection.socket.send("AUTH TLS\r\n")
+                connection.socket.send("AUTH TLS\r\n".encode('ascii'))
                 data = connection.socket.recv(500)
             elif starttls == "pop3":
                 data = connection.socket.recv(500)
-                connection.socket.send("STLS\r\n")
+                connection.socket.send("STLS\r\n".encode('ascii'))
                 data = connection.socket.recv(500)
         connection.setup_ssl()
         connection.set_connect_state()
@@ -295,9 +295,9 @@ def getTLSA(hostname, port=443, protocol='tcp', secure=True):
 	for record in records:
 		hexdata = b2a_hex(record)
 		if port == '*':
-			ret.append(TLSARecord('*._%s.%s' % (protocol.lower(), hostname), int(hexdata[0:2],16), int(hexdata[2:4],16), int(hexdata[4:6],16), hexdata[6:]))
+			ret.append(TLSARecord('*._%s.%s' % (protocol.lower(), hostname), int(hexdata[0:2],16), int(hexdata[2:4],16), int(hexdata[4:6],16), hexdata[6:].decode('ascii')))
 		else:
-			ret.append(TLSARecord('_%s._%s.%s' % (port, protocol.lower(), hostname), int(hexdata[0:2],16), int(hexdata[2:4],16), int(hexdata[4:6],16), hexdata[6:]))
+			ret.append(TLSARecord('_%s._%s.%s' % (port, protocol.lower(), hostname), int(hexdata[0:2],16), int(hexdata[2:4],16), int(hexdata[4:6],16), hexdata[6:].decode('ascii')))
 	return ret
 
 def verifyCertMatch(record, cert):
@@ -506,7 +506,7 @@ class TLSARecord:
 			self.usage = int(usage)
 			self.selector = int(selector)
 			self.mtype = int(mtype)
-			self.cert = str(cert)
+			self.cert = cert
 		except:
 			raise Exception('Invalid value passed, unable to create a TLSARecord')
 
