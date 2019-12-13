@@ -7,6 +7,7 @@
 # Copyright 2014 Gerald Turner <gturner@unzane.com>
 # Copyright 2015 Jean-Michel Nirgal Vourgere <jmv_deb@nirgal.com>
 # Copyright 2015 Dirk Stoecker <github@dstoecker.de>
+# Copyright 2019 Kishan Takoordyal <kishan@cyberstorm.mu>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -71,6 +72,8 @@ def create_sshfp(hostname, keytype, keyblob, digesttype):
 	elif keytype == "ssh-ed25519":
 		# TBD http://tools.ietf.org/html/draft-moonesamy-sshfp-ed25519-01
 		keytype = "4"
+	elif keytype == "ssh-xmss":
+		keytype = "5"
 	else:
 		return ""
 	if digesttype == "sha1":
@@ -341,9 +344,9 @@ def main():
 			action="append",
 			type="choice",
 			dest="algo",
-			choices=["rsa", "ecdsa", "ed25519", "dsa"],
+			choices=["rsa", "ecdsa", "ed25519", "dsa", "xmss"],
 			default=[],
-			help="key type to fetch (may be specified more than once, default rsa,ecdsa,ed25519,dsa)")
+			help="key type to fetch (may be specified more than once, default rsa,ecdsa,ed25519,dsa,xmss)")
 	parser.add_option("--digest",
 			action="append",
 			type="choice",
@@ -369,7 +372,7 @@ def main():
 	data = ""
 	trailing = options.trailing_dot
 	timeout = options.timeout
-	algos = options.algo or ["rsa", "ecdsa", "ed25519"]
+	algos = options.algo or ["rsa", "ecdsa", "ed25519", "xmss"]
 	digests = options.digest or ["sha256"]
 	all_hosts = options.all_hosts
 	port = options.port
