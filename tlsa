@@ -393,7 +393,7 @@ def getLocalChain(filename, debug):
 	(stdout, stderr) = process.communicate()
 	if debug:
 		print(stderr, file=sys.stderr)
-	if stdout.endswith("OK\n"):
+	if stdout.endswith(b"OK\n"):
 		verify_result = 0
 	else:
 		verify_result = "%s%s" % (stdout, stderr)
