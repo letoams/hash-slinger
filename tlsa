@@ -116,7 +116,7 @@ def genRecords(hostname, protocol, port, chain, output='rfc', usage=1, selector=
 
 def getA(hostname, secure=True):
 	"""Gets a list of A records for hostname, returns a list of ARecords"""
-	records = ""
+	records = []
 	try:
 		records = getRecords(hostname, rrtype='A', secure=secure)
 	except InsecureLookupException as e:
@@ -129,8 +129,8 @@ def getA(hostname, secure=True):
 	return ret
 
 def getAAAA(hostname, secure=True):
-	"""Gets a list of A records for hostname, returns a list of AAAARecords"""
-	records = ""
+	"""Gets a list of AAAA records for hostname, returns a list of AAAARecords"""
+	records = []
 	try:
 		records = getRecords(hostname, rrtype='AAAA', secure=secure)
 	except InsecureLookupException as e:
