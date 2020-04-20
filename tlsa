@@ -32,7 +32,7 @@ import unbound
 import subprocess
 import re
 from M2Crypto import X509, SSL, BIO, m2
-from binascii import a2b_hex, b2a_hex
+from binascii import b2a_hex
 from hashlib import sha256, sha512
 from ipaddress import IPv4Address, IPv6Address
 
