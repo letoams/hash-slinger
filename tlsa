@@ -261,7 +261,7 @@ def getHash(certificate, mtype):
 	"""
 	certificate = certificate.as_der()
 	if mtype == 0:
-		return b2a_hex(certificate)
+		return certificate.hex()
 	elif mtype == 1:
 		return sha256(certificate).hexdigest()
 	elif mtype == 2:
