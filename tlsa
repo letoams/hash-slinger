@@ -71,7 +71,7 @@ def genTLSA(hostname, protocol, port, certificate, output='rfc', usage=1, select
 		return record.getRecord(generic=True)
 	return record.getRecord()
 
-def genRecords(hostname, protocol, port, chain, output='rfc', usage=1, selector=0, mtype=1):
+def genRecords(hostname, address, protocol, port, chain, output='rfc', usage=1, selector=0, mtype=1):
 	cert = None
 	chained = checkChainLink(chain)[0]
 	if not chained:
@@ -81,7 +81,7 @@ def genRecords(hostname, protocol, port, chain, output='rfc', usage=1, selector=
 		certsleft -= 1
 		if usage == 1 or usage == 3:
 			# The first cert is the end-entity cert
-			print('Got a certificate with Subject: %s' % chaincert.get_subject())
+			print('Got a certificate for %s with Subject: %s' % (address, chaincert.get_subject()))
 			cert = chaincert
 			break
 		else:
@@ -881,7 +881,7 @@ if __name__ == '__main__':
 					continue
 
 				chain = connection.get_peer_cert_chain()
-				genRecords(args.host, args.protocol, args.port, chain, args.output, args.usage, args.selector, args.mtype)
+				genRecords(args.host, address, args.protocol, args.port, chain, args.output, args.usage, args.selector, args.mtype)
 				# Cleanup the connection and context
 				connection.clear()
 				connection.close()
@@ -892,6 +892,6 @@ if __name__ == '__main__':
 				chain, verify_result = getLocalChain(args.certificate, args.debug)
 				if args.usage == 0 or args.usage == 1 and not verify_result:
 					print('Following error was raised during PKIX validation: %s' % verify_result)
-				genRecords(args.host, args.protocol, args.port, chain, args.output, args.usage, args.selector, args.mtype)
+				genRecords(args.host, args.host, args.protocol, args.port, chain, args.output, args.usage, args.selector, args.mtype)
 			except Exception as e:
 				print('Could not verify local certificate: %s.' % e)
