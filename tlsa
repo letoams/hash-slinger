@@ -357,7 +357,7 @@ def verifyCertNameWithHostName(cert, hostname, with_msg=False):
 def checkChainLink(chain, record=None):
 	previous_issuer = None
 	chained = True
-	matched = False
+	matched = None
 	for cert in chain:
 		if previous_issuer:
 			if not str(previous_issuer) == str(cert.get_subject()): # The chain cannot be valid
@@ -365,7 +365,7 @@ def checkChainLink(chain, record=None):
 				break
 		previous_issuer = cert.get_issuer()
 		if record and verifyCertMatch(record, cert):
-			matched = True
+			matched = cert
 	return chained, matched
 
 def getLocalChain(filename, debug):
@@ -472,7 +472,7 @@ def verifyChain(chain, verify_result, pre_exit, local, source):
 			if not chained:
 				print("WARN: Certificates don't chain")
 			print('SUCCESS (%s): A %s (including the end-entity certificate) matches the TLSA record (%s)' % (ut, text_chain, source))
-			if args.debug: print('The matched certificate has Subject: %s' % cert.get_subject())
+			if args.debug: print('The matched certificate has Subject: %s' % matched.get_subject())
 		else:
 			if not chained:
 				print("FAIL: Certificates don't chain")
