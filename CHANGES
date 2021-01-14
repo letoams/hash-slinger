@@ -1,3 +1,9 @@
+v3.1 (January 14, 2020)
+- tlsa: bug fixes [Peter van Dijk, Dirk Stöcker]
+- tlsa: separate duplicate output due to multiple IP addresses [Dirk Stöcker]
+- openpgpkey: update docs [Arsen Stasic]
+- sshfp: Support for xmss [Kishan Takoordyal]
+
 v3.0 (November 3, 2019)
 - upgrade to python version 3 [Frank Crawford]
 
