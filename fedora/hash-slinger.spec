@@ -3,11 +3,11 @@ Name: hash-slinger
 Version: 3.1
 Release: 1%{?dist}
 License: GPLv2+
-Url:  http://people.redhat.com/pwouters/%{name}/
-Source:  http://people.redhat.com/pwouters/%{name}/%{name}-%{version}.tar.gz
+Url:  https://github.com/letoams/%{name}/
+Source:  https://github.com/letoams/%{name}/archive/%{version}/%{name}-%{version}.tar.gz
 # Only to regenerate the man page, which is shipped per default
 # Buildrequires: xmlto
-BuildRequires: python3-devel
+BuildRequires: python3-devel, make
 Requires: python3 >= 3.4
 Requires: python3-dns, python3-unbound
 Requires: openssh-clients >= 4, python3-m2crypto, python3-gnupg >= 0.3.7
@@ -24,7 +24,7 @@ tlsa        Generate RFC-6698  TLSA DNS records via TLS
 openpgpkey  Generate draft-ietf-dane-openpgpkey DNS records from OpenPGP
             keyrings
 ipseckey    Generate RFC-4025 IPSECKEY DNS records on Libreswan
-	    IPsec servers
+            IPsec servers
 
 This package has incorporated the old 'sshfp' and 'swede' commands/packages
 
@@ -32,18 +32,29 @@ This package has incorporated the old 'sshfp' and 'swede' commands/packages
 %setup -q 
 
 %build
-make all
+make %{?_smp_mflags} all
 
 %install
-rm -rf ${RPM_BUILD_ROOT}
 make DESTDIR=${RPM_BUILD_ROOT} install
 
 %files 
-%doc BUGS CHANGES README COPYING
+%license COPYING
+%doc BUGS CHANGES README
 %{_bindir}/*
 %doc %{_mandir}/man1/*
 
 %changelog
+* Sat Sep 25 2021 Frank Crawford <frank@crawford.emu.id.au> - 3.1-1
+- Updated to 3.1
+- Add BuildRequires make
+- Clean up spec file for Fedora review
+
+* Sun Nov 03 2019 Frank Crawford <frank@crawford.emu.id.au> - 3.0-1
+- Update to Python3
+
+* Sat Apr 13 2019 Paul Wouters <pwouters@redhat.com> - 2.8-1
+- Remove Requires: for python-argparse which is now part of python core
+
 * Wed Sep 21 2016 Paul Wouters <pwouters@redhat.com> - 2.7-3
 - Remove Requires: for python-argparse which is now part of python core
 
