@@ -1,10 +1,10 @@
 Summary: Generate and verify various DNS records such as SSHFP, TLSA and OPENPGPKEY
 Name: hash-slinger
 Version: 3.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Url:  https://github.com/letoams/%{name}/
-Source:  https://github.com/letoams/%{name}/archive/%{version}/%{name}-%{version}.tar.gz
+Source:  %{url}archive/%{version}/%{name}-%{version}.tar.gz
 # Only to regenerate the man page, which is shipped per default
 # Buildrequires: xmlto
 BuildRequires: python3-devel, make
@@ -29,13 +29,13 @@ ipseckey    Generate RFC-4025 IPSECKEY DNS records on Libreswan
 This package has incorporated the old 'sshfp' and 'swede' commands/packages
 
 %prep
-%setup -q 
+%autosetup
 
 %build
-make %{?_smp_mflags} all
+%make_build all
 
 %install
-make DESTDIR=${RPM_BUILD_ROOT} install
+%make_install
 
 %files 
 %license COPYING
@@ -44,6 +44,9 @@ make DESTDIR=${RPM_BUILD_ROOT} install
 %doc %{_mandir}/man1/*
 
 %changelog
+* Sun Jan 09 2022 Frank Crawford <frank@crawford.emu.id.au> - 3.1-2
+- Update spec file following review
+
 * Sat Sep 25 2021 Frank Crawford <frank@crawford.emu.id.au> - 3.1-1
 - Updated to 3.1
 - Add BuildRequires make
