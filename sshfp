@@ -172,7 +172,7 @@ def check_hashed(entry, hostnames):
 		salt = base64.b64decode(salt64)
 		hash = base64.b64decode(hash64)
 		for host in hostnames:
-			if hash == hmac.new(salt, host, hashlib.sha1).digest():
+			if hash == hmac.new(salt, host.encode(encoding="utf-8"), hashlib.sha1).digest():
 				return host
 	return ""
 
@@ -301,7 +301,6 @@ def main():
 			action="store",
 			dest="known_hosts",
 			metavar="KNOWN_HOSTS_FILE",
-			default=DEFAULT_KNOWN_HOSTS_FILE,
 			help="obtain public ssh keys from the known_hosts file KNOWN_HOSTS_FILE")
 	parser.add_option("-s", "--scan", 
 			action="store_true",
@@ -363,7 +362,7 @@ def main():
 	(options, args) = parser.parse_args()
 
 	# parse options
-	khfile = options.known_hosts
+	khfile = options.known_hosts or DEFAULT_KNOWN_HOSTS_FILE
 	dodns = options.scan
 	nameserver = ""
 	domain = ""
@@ -373,6 +372,14 @@ def main():
 	trailing = options.trailing_dot
 	timeout = options.timeout
 	algos = options.algo or ["rsa", "ecdsa", "ed25519", "xmss"]
+	for algo in algos:
+		cmd = ["ssh-keyscan", "-t", algo]
+		process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+		(stdout, stderr) = process.communicate()
+		if "Unknown key type" in stderr:
+			algos.remove(algo)
+			if not quiet:
+				print("WARNING: key type %s not supported" % algo, file=sys.stderr)
 	digests = options.digest or ["sha256"]
 	all_hosts = options.all_hosts
 	port = options.port
@@ -384,7 +391,7 @@ def main():
 	if not quiet and port != 22:
 		print("WARNING: non-standard port numbers are not designated in SSHFP records", file=sys.stderr)
 	if not quiet and options.known_hosts and options.scan:
-		print("WARNING: Ignoring known hosts option -k , -s was passed", file=sys.stderr)
+		print("WARNING: Ignoring known hosts option -k, -s was passed", file=sys.stderr)
 	if options.nameserver and not options.scan and not options.all_hosts:
 		print("ERROR: Cannot specify -n without -s and -a", file=sys.stderr)
 		sys.exit(1)

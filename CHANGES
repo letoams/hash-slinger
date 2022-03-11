@@ -1,3 +1,8 @@
+v3.2 (...)
+- sshfp: fix UTF-8 encoding issue [Dirk Stöcker]
+- sshfp: fix handling when xmss is not supported [Dirk Stöcker]
+- sshfp: don't warn for default known hosts file and option scan [Dirk Stöcker]
+
 v3.1 (January 14, 2020)
 - tlsa: bug fixes [Peter van Dijk, Dirk Stöcker]
 - tlsa: separate duplicate output due to multiple IP addresses [Dirk Stöcker]
