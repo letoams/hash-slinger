@@ -169,11 +169,12 @@ if __name__ == '__main__':
 						sys.exit(1)
 				if not args.uid and not args.keyid:
 					pubkey = gpgnet.export_keys(args.email, minimal=True)
-					print('openpgpkey: Received OpenPGP data does not contain a key with keyid %s'%args.email, file=sys.stderr)
-					print('(add --uid <uid> to override with any of the below received uids)', file=sys.stderr)
-					for id in  gpgnet.list_keys()[0]['uids']:
-						print("# %s"%id, file=sys.stderr)
-					sys.exit(1)
+					if not pubkey:
+						print('openpgpkey: Received OpenPGP data does not contain a key with keyid %s'%args.email, file=sys.stderr)
+						print('(add --uid <uid> to override with any of the below received uids)', file=sys.stderr)
+						for id in  gpgnet.list_keys()[0]['uids']:
+							print("# %s"%id, file=sys.stderr)
+						sys.exit(1)
 
 				pubkey = pubkey.replace("Version:","Comment: %s key obtained from DNS\nVersion:"%args.email)
 				if args.insecure:
