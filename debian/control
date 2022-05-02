@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Paul Wouters <pwouters@redhat.com>
 Build-Depends: debhelper (>= 7.0.50~), dh-python, python3, xmlto
-Homepage: http://people.redhat.com/pwouters/hash-slinger/
+Homepage: https://github.com/letoams/hash-slinger
 Standards-Version: 3.8.4
 
 Package: hash-slinger
@@ -12,6 +12,6 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3, python
 X-Python-Version: ${python3:Versions}
 Description: This pacakge contains various tools to generate special DNS records
  sshfp		Generate RFC-4255 SSHFP DNS records from known_hosts files or ssh-keyscan
- tlsa		Generate RFC-6698  TLSA DNS records via TLS
- openpgpkey	Generate draft-ietf-dane-openpgpkey DNS records from OpenPGP keyrings
+ tlsa		Generate RFC-6698 TLSA DNS records via TLS
+ openpgpkey	Generate RFC-7929 OPENPGP DNS records from OpenPGP keyrings
  ipseckey	Generate RFC-4025 IPSECKEY DNS records from Libreswan IPsec servers

@@ -156,7 +156,7 @@ to generate TLSA records. Currently. tlsa has no AXFR support for en-mass TLSA r
 <refsect1 id='see_also'><title>SEE ALSO</title>
 <para><citerefentry><refentrytitle>sshfp</refentrytitle><manvolnum>1</manvolnum></citerefentry> <citerefentry><refentrytitle>ssh-keygen</refentrytitle><manvolnum>1</manvolnum></citerefentry>and RFC-6698</para>
 
-<para><ulink url='http://people.redhat.com/pwouters/hash-slinger/'>http://people.redhat.com/pwouters/hash-slinger/</ulink></para>
+<para><ulink url='https://github.com/letoams/hash-slinger'>https://github.com/letoams/hash-slinger</ulink></para>
 <para><ulink url='http://os3sec.org/'>http://os3sec.org/</ulink></para>
 </refsect1>
 

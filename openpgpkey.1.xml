@@ -103,9 +103,9 @@ email address associated with it from the user's local GnuPG keychain.
 
 <refsect1 id='see_also'><title>SEE ALSO</title>
 
-<para>draft-ietf-dane-openpgpkey</para>
+<para>RFC-7929</para>
 
-<para><ulink url='http://people.redhat.com/pwouters/hash-slinger/'>http://people.redhat.com/pwouters/hash-slinger/</ulink></para>
+<para><ulink url='https://github.com/letoams/hash-slinger'>https://github.com/letoams/hash-slinger</ulink></para>
 </refsect1>
 
 <refsect1 id='authors'><title>AUTHORS</title>
@@ -113,7 +113,7 @@ email address associated with it from the user's local GnuPG keychain.
 </refsect1>
 
 <refsect1 id='copyright'><title>COPYRIGHT</title>
-<para>Copyright 2014-2015</para>
+<para>Copyright 2014-2022</para>
 
 <para>This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the

@@ -20,8 +20,8 @@ This package contains various tools to generate special DNS records:
 
 sshfp       Generate RFC-4255 SSHFP DNS records from known_hosts files
             or ssh-keyscan
-tlsa        Generate RFC-6698  TLSA DNS records via TLS
-openpgpkey  Generate draft-ietf-dane-openpgpkey DNS records from OpenPGP
+tlsa        Generate RFC-6698 TLSA DNS records via TLS
+openpgpkey  Generate RFC-7929 OPENPGP DNS records from OpenPGP
             keyrings
 ipseckey    Generate RFC-4025 IPSECKEY DNS records on Libreswan
             IPsec servers
