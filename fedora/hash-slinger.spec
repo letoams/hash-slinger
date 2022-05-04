@@ -1,6 +1,6 @@
 Summary: Generate and verify various DNS records such as SSHFP, TLSA and OPENPGPKEY
 Name: hash-slinger
-Version: 3.1
+Version: 3.2
 Release: 2%{?dist}
 License: GPLv2+
 Url:  https://github.com/letoams/%{name}/

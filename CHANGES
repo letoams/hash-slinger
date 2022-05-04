@@ -1,4 +1,4 @@
-v3.2 (...)
+v3.2 (May, 4, 2022)
 - openpgpkey: fix fetch option [Dirk Stöcker]
 - sshfp: fix UTF-8 encoding issue [Dirk Stöcker]
 - sshfp: fix handling when xmss is not supported [Dirk Stöcker]
