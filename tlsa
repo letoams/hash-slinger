@@ -703,9 +703,8 @@ if __name__ == '__main__':
 		records = getTLSA(args.host, args.port, args.protocol, secure)
 		if len(records) == 0:
 			sys.exit(1)
-
+		pre_exit = 0
 		for record in records:
-			pre_exit = 0
 			# First, check if the first three fields have correct values.
 			if args.debug:
 				print('Received the following record for name %s:' % record.name)
