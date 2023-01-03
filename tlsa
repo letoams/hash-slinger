@@ -23,7 +23,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-VERSION="3.2"
+VERSION="3.3"
 
 import sys
 import os
@@ -37,7 +37,7 @@ from hashlib import sha256, sha512
 from ipaddress import IPv4Address, IPv6Address
 
 ROOTKEY="none"
-cauldron = ( "/var/lib/unbound/root.anchor", "/var/lib/unbound/root.key", "/etc/unbound/root.key" )
+cauldron = ( "/var/lib/unbound/root.anchor", "/var/lib/unbound/root.key", "/etc/unbound/root.key", "/usr/share/dns/root.key" )
 for root in cauldron:
 	if os.path.isfile(root):
 		ROOTKEY=root
@@ -880,6 +880,8 @@ if __name__ == '__main__':
 					continue
 
 				chain = connection.get_peer_cert_chain()
+				if not verifyCertNameWithHostName(cert=chain[0], hostname=str(args.host), with_msg=args.debug):
+					print('WARNING: Certificate name does not match the hostname')
 				genRecords(args.host, address, args.protocol, args.port, chain, args.output, args.usage, args.selector, args.mtype)
 				# Cleanup the connection and context
 				connection.clear()

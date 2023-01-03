@@ -1,3 +1,7 @@
+v3.3 (Jan, 2, 2023)
+- tlsa: Add /usr/share/dns/root.key to cauldron
+- tlsa: Give warning on TLSA create routine for certificate name mismatch to hostname provided
+
 v3.2 (May, 4, 2022)
 - openpgpkey: fix fetch option [Dirk Stöcker]
 - sshfp: fix UTF-8 encoding issue [Dirk Stöcker]
