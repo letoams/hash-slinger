@@ -37,7 +37,7 @@ global ctx
 
 def asctohex(s):
     empty = '' # I use this construct because I find ''.join() too dense
-    return empty.join(['%02x' % ord(c) for c in s]) # the %02 pads when needed
+    return empty.join(['%02x' % c for c in s]) # the %02 pads when needed
 
 def createOPENPGPKEY(email, gpgdisk, keyid, output, debug):
 	ekey64 = "".join(gpgdisk.export_keys(keyid,minimal=True, secret=False, armor=True).split("\n")[2:-3])
