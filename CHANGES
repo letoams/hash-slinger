@@ -1,4 +1,4 @@
-v3.3 (unreleased)
+v3.3 (June, 6, 2023)
 - tlsa: Add /usr/share/dns/root.key to cauldron [Vijay Sarvepalli]
 - tlsa: Give warning on TLSA create routine for certificate name mismatch to hostname provided [Vijay Sarvepalli]
 - openpgp: Fix crash when exporting generic format [Dirk Stöcker]
