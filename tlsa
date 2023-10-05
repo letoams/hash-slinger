@@ -513,7 +513,7 @@ class TLSARecord:
 	def getRecord(self, generic=False):
 		"""Returns the RR string of this TLSARecord, either in rfc (default) or generic format"""
 		if generic:
-			return '%s IN TYPE52 \# %s %s%s%s%s' % (self.name, (len(self.cert)/2)+3 , self._toHex(self.usage), self._toHex(self.selector), self._toHex(self.mtype), self.cert)
+			return '%s IN TYPE52 \# %s %s%s%s%s' % (self.name, (len(self.cert)//2)+3 , self._toHex(self.usage), self._toHex(self.selector), self._toHex(self.mtype), self.cert)
 		return '%s IN TLSA %s %s %s %s' % (self.name, self.usage, self.selector, self.mtype, self.cert)
 
 	def _toHex(self, val):
