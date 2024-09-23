@@ -51,7 +51,7 @@ def createOPENPGPKEY(email, gpgdisk, keyid, output, debug):
 		if debug:
 			print("Length for generic record is %s" % len(ekey))
 		print("; keyid: %s" % keyid)
-		print("%s._openpgpkey.%s. IN TYPE61 \# %s %s" % (euser, domain, len(ekey), asctohex(ekey)))
+		print(r"%s._openpgpkey.%s. IN TYPE61 \# %s %s" % (euser, domain, len(ekey), asctohex(ekey)))
 
 def sha256trunc(data):
 	"""Compute SHA2-256 hash truncated to 28 octets."""
