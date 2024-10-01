@@ -403,7 +403,8 @@ def usageText(usage):
 	names = ["PKIX-CA", "PKIX-EE", "DANE-TA", "DANE-EE"]
 	return "Usage %d [%s]" % (usage, names[usage])
 
-def verifyChain(chain, verify_result, pre_exit, local, source):
+def verifyChain(record, chain, verify_result, pre_exit, local, source):
+	source = "%s for %s" % (record.getShortText(), source)
 	if local:
 		text_cert = "Local certificate"
 		text_chain = "certificate in the local certificate chain"
@@ -568,6 +569,9 @@ class TLSARecord:
 			return '*'
 		else:
 			return re.split(r'\.', self.name)[0][1:]
+
+	def getShortText(self):
+		return "%d %d %d %.8s..." % (self.usage, self.selector, self.mtype, self.cert)
 
 class ARecord:
 	"""An object representing an A Record (IPv4 address)"""
@@ -744,7 +748,7 @@ if __name__ == '__main__':
 			if args.certificate:
 				try:
 					chain, verify_result = getLocalChain(args.certificate, args.debug)
-					pre_exit = verifyChain(chain, verify_result, pre_exit, True, args.certificate)
+					pre_exit = verifyChain(record, chain, verify_result, pre_exit, True, args.certificate)
 				except Exception as e:
 					print('Could not verify local certificate: %s.' % e)
 					sys.exit(0)
@@ -795,7 +799,7 @@ if __name__ == '__main__':
 				verify_result = connection.get_verify_result()
 
 				# Good, now let's verify
-				pre_exit = verifyChain(chain, verify_result, pre_exit, False, address)
+				pre_exit = verifyChain(record, chain, verify_result, pre_exit, False, address)
 				# Cleanup, just in case
 				connection.clear()
 				connection.close()
