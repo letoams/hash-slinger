@@ -17,10 +17,9 @@
 <!-- body begins here -->
 
 <refsect1 id='syntax'><title>SYNTAX</title>
-<para>sshfp [<option>-k</option> &lt;<emphasis remap='I'>knownhosts_file</emphasis>&gt;] [<option>-d</option>] [<option>-a</option>] [<option>--type</option> &lt;algo&gt;] [<option>--digest</option> &lt;digest&gt;] [&lt;<emphasis remap='I'>host1</emphasis>&gt; [<emphasis remap='I'>host2 ...]</emphasis>]
-</para>
+<para>sshfp [<option>-k</option> &lt;<emphasis remap='I'>knownhosts_file</emphasis>&gt;] [<option>-d</option>] [<option>-a</option>] [<option>-t</option> &lt;algo&gt;] [<option>--digest</option> &lt;digest&gt;] [&lt;<emphasis remap='I'>host1</emphasis>&gt; [<emphasis remap='I'>host2 ...]</emphasis>]</para>
 <!-- .br -->
-<para>sshfp <option>-s</option> [<option>-p</option> &lt;<emphasis remap='I'>port</emphasis>&gt;] [<option>-d</option>] [<option>-a</option>] [<option>--type</option> &lt;algo&gt;] [<option>--digest</option> &lt;digest&gt;] [<option>-n &lt;nameserver</option>&gt;<emphasis remap='P->I'>] &lt;domain1</emphasis>&gt; [<emphasis remap='I'>domain2</emphasis>] &lt;<emphasis remap='I'>host1</emphasis>&gt; [<emphasis remap='I'>host2 ...</emphasis>] &gt;</para>
+<para>sshfp <option>-s</option> [<option>-p</option> &lt;<emphasis remap='I'>port</emphasis>&gt;] [<option>-d</option>] [<option>-a</option>] [<option>-t</option> &lt;algo&gt;] [<option>--digest</option> &lt;digest&gt;] [<option>-n</option> &lt;<emphasis remap='I'>nameserver</emphasis>&gt;] &lt;<emphasis remap='I'>domain1</emphasis>&gt; [<emphasis remap='I'>domain2</emphasis>] &lt;<emphasis remap='I'>host1</emphasis>&gt; [<emphasis remap='I'>host2 ...</emphasis>]</para>
 </refsect1>
 
 <refsect1 id='description'><title>DESCRIPTION</title>
@@ -37,13 +36,13 @@ the hostname to be scanned. If the nameserver of the domain allows zone transfer
   <varlistentry>
   <term><option>-s / --scan</option> &lt;<emphasis remap='I'>hostname1</emphasis>&gt; [hostname2 ...]</term>
   <listitem>
-<para>Scan hosts or domain for public SSH keys using ssh-keyscan</para> 
+<para>Scan hosts or domain for public SSH keys using ssh-keyscan.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
   <term><option>-k / --knownhosts &lt;</option><emphasis remap='I'>knownhosts_file</emphasis><emphasis remap='P->B'>&gt; &lt;</emphasis><emphasis remap='I'>hostname1</emphasis><emphasis remap='P->B'>&gt; [hostname2 ...]</emphasis></term>
   <listitem>
-<para>Obtain public SSH keys from a known_hosts file. Defaults to using ~/.ssh/known_hosts</para>
+<para>Obtain public SSH keys from a known_hosts file. Defaults to using ~/.ssh/known_hosts.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
@@ -67,9 +66,21 @@ sshfp can also just be manually edited for trailing dots.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
+  <term><option>--digest</option> &lt;<emphasis remap='I'>digest</emphasis>&gt;</term>
+  <listitem>
+<para>Fingerprint hash function (may be specified more than once, default sha1,sha256).</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>-n / --nameserver</option> &lt;<emphasis remap='I'>nameserver</emphasis>&gt;</term>
+  <listitem>
+<para>Nameserver to use for AXFR (only valid with -s -a).</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
   <term><option>-o / --output</option> &lt;<emphasis remap='I'>filename</emphasis>&gt;</term>
   <listitem>
-<para>Write to filename instead of stdout</para>
+<para>Write to filename instead of stdout.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
@@ -85,6 +96,18 @@ sshfp can also just be manually edited for trailing dots.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
+  <term><option>-T / --timeout</option> &lt;<emphasis remap='I'>seconds</emphasis>&gt;</term>
+  <listitem>
+<para>Scanning timeout, in seconds (default 5).</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><option>-t / --type</option> &lt;<emphasis remap='I'>algo</emphasis>&gt;</term>
+  <listitem>
+<para>Key type to fetch (may be specified more than once, default rsa,ecdsa,ed25519,dsa,xmss).</para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
   <term><option>-v / --version</option></term>
   <listitem>
 <para>Output version information and exit.</para>
@@ -93,7 +116,7 @@ sshfp can also just be manually edited for trailing dots.</para>
   <varlistentry>
   <term><option>-q / --quiet</option></term>
   <listitem>
-<para>Output less miscellany to stderr</para>
+<para>Output less miscellany to stderr.</para>
   </listitem>
   </varlistentry>
 </variablelist>

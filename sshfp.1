@@ -32,16 +32,17 @@ sshfp \- Generate SSHFP DNS records from knownhosts files or ssh\-keyscan
 .SH "SYNTAX"
 .PP
 sshfp [\fB\-k\fR
-<\fIknownhosts_file\fR>] [\fB\-d\fR] [\fB\-a\fR] [\fB\-\-type\fR
+<\fIknownhosts_file\fR>] [\fB\-d\fR] [\fB\-a\fR] [\fB\-t\fR
 <algo>] [\fB\-\-digest\fR
 <digest>] [<\fIhost1\fR> [\fIhost2 \&.\&.\&.]\fR]
 .PP
 sshfp
 \fB\-s\fR
 [\fB\-p\fR
-<\fIport\fR>] [\fB\-d\fR] [\fB\-a\fR] [\fB\-\-type\fR
+<\fIport\fR>] [\fB\-d\fR] [\fB\-a\fR] [\fB\-t\fR
 <algo>] [\fB\-\-digest\fR
-<digest>] [\fB\-n <nameserver\fR>\fI] <domain1\fR> [\fIdomain2\fR] <\fIhost1\fR> [\fIhost2 \&.\&.\&.\fR] >
+<digest>] [\fB\-n\fR
+<\fInameserver\fR>] <\fIdomain1\fR> [\fIdomain2\fR] <\fIhost1\fR> [\fIhost2 \&.\&.\&.\fR]
 .SH "DESCRIPTION"
 .PP
 sshfp generates RFC\-4255 SSHFP DNS records based on the public keys stored in a known_hosts file, which implies the user has previously trusted this key, or public keys can be obtained by using ssh\-keyscan (1)\&. Using ssh\-keyscan (1) implies a secure path to connect to the hosts being scanned\&. It also implies a trust in the DNS to obtain the IP address of the hostname to be scanned\&. If the nameserver of the domain allows zone transfers (AXFR), an entire domain can be processed for all its A records\&.
@@ -49,12 +50,12 @@ sshfp generates RFC\-4255 SSHFP DNS records based on the public keys stored in a
 .PP
 \fB\-s / \-\-scan\fR <\fIhostname1\fR> [hostname2 \&.\&.\&.]
 .RS 4
-Scan hosts or domain for public SSH keys using ssh\-keyscan
+Scan hosts or domain for public SSH keys using ssh\-keyscan\&.
 .RE
 .PP
 \fB\-k / \-\-knownhosts <\fR\fIknownhosts_file\fR\fI> <\fR\fIhostname1\fR\fI> [hostname2 \&.\&.\&.]\fR
 .RS 4
-Obtain public SSH keys from a known_hosts file\&. Defaults to using ~/\&.ssh/known_hosts
+Obtain public SSH keys from a known_hosts file\&. Defaults to using ~/\&.ssh/known_hosts\&.
 .RE
 .PP
 \fB\-a / \-\-all\fR
@@ -67,9 +68,19 @@ Scan all hosts in the known_hosts file when used with \-k\&. When used with \-s,
 Add a trailing dot to the hostname in the SSHFP records\&. It is not possible to determine whether a known_hosts or dns query is for a FQDN (eg www\&.redhat\&.com) or not (eg www) or not (unless \-d domainname \-a is used, in which case a trailing dot is always appended)\&. Non\-FQDN get their domainname appended through /etc/resolv\&.conf These non\-FQDN will happen when using a non\-FQDN (eg sshfp \-k www) or known_hosts entries obtained by running ssh www\&.sub where \&.domain\&.com is implied\&. When \-d is used, all hostnames not ending with a dot, that at least contain two parts in their hostname (eg www\&.sub but not www get a trailing dot\&. Note that the output of sshfp can also just be manually edited for trailing dots\&.
 .RE
 .PP
+\fB\-\-digest\fR <\fIdigest\fR>
+.RS 4
+Fingerprint hash function (may be specified more than once, default sha1,sha256)\&.
+.RE
+.PP
+\fB\-n / \-\-nameserver\fR <\fInameserver\fR>
+.RS 4
+Nameserver to use for AXFR (only valid with \-s \-a)\&.
+.RE
+.PP
 \fB\-o / \-\-output\fR <\fIfilename\fR>
 .RS 4
-Write to filename instead of stdout
+Write to filename instead of stdout\&.
 .RE
 .PP
 \fB\-p / \-\-port\fR <\fIportnumber\fR>
@@ -82,6 +93,16 @@ Use portnumber for scanning\&. Note that portnumbers do NOT appear in SSHFP reco
 Output help information and exit\&.
 .RE
 .PP
+\fB\-T / \-\-timeout\fR <\fIseconds\fR>
+.RS 4
+Scanning timeout, in seconds (default 5)\&.
+.RE
+.PP
+\fB\-t / \-\-type\fR <\fIalgo\fR>
+.RS 4
+Key type to fetch (may be specified more than once, default rsa,ecdsa,ed25519,dsa,xmss)\&.
+.RE
+.PP
 \fB\-v / \-\-version\fR
 .RS 4
 Output version information and exit\&.
@@ -89,7 +110,7 @@ Output version information and exit\&.
 .PP
 \fB\-q / \-\-quiet\fR
 .RS 4
-Output less miscellany to stderr
+Output less miscellany to stderr\&.
 .RE
 .SH "FILES"
 .PP
@@ -123,7 +144,9 @@ sshfp \-k ~paul/\&.ssh/known_hosts bofh\&.nohats\&.ca www\&.openswan\&.org \-o /
 sshfp \-a \-d \-d nohats\&.ca \-n ns0\&.nohats\&.ca >> /var/named/primary/nohats\&.ca
 .SH "SEE ALSO"
 .PP
-\fBssh-keyscan\fR(1)\fBssh\fR(1)\fBtlsa\fR(1)
+\fBssh-keyscan\fR(1)
+\fBssh\fR(1)
+\fBtlsa\fR(1)
 and RFC\-4255
 .SH "AUTHORS"
 .PP
