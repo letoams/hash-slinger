@@ -30,7 +30,7 @@ REQUIREMENTS:
 
 python-dns 	http://www.dnspython.org/
 python-gnupg	http://pythonhosted.org/python-gnupg/
-m2crypto	http://gitlab.com/m2crypto/m2crypto/
+cryptography	https://cryptography.io/
 unbound-python	http://www.unbound.net/
 ssh-keygen	from openssh
 gpg		from gnupg

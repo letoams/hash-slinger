@@ -28,10 +28,14 @@ VERSION="3.4"
 import sys
 import os
 import socket
+import ssl
 import unbound
 import subprocess
 import re
-from M2Crypto import X509, SSL, BIO, m2
+from cryptography import x509
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+from cryptography.x509.oid import ExtensionOID, NameOID
 from binascii import b2a_hex
 from hashlib import sha256, sha512
 from ipaddress import IPv4Address, IPv6Address
@@ -60,10 +64,10 @@ def genTLSA(hostname, protocol, port, certificate, output='rfc', usage=1, select
 	if record.isValid:
 		if record.selector == 0:
 			# Hash the Full certificate
-			record.cert = getHash(certificate, record.mtype)
+			record.cert = getHash(certificate, record.mtype, use_pubkey=False)
 		else:
 			# Hash only the SubjectPublicKeyInfo
-			record.cert = getHash(certificate.get_pubkey(), record.mtype)
+			record.cert = getHash(certificate, record.mtype, use_pubkey=True)
 
 	record.isValid(raiseException=True)
 
@@ -81,13 +85,13 @@ def genRecords(hostname, address, protocol, port, chain, output='rfc', usage=1, 
 		certsleft -= 1
 		if usage == 1 or usage == 3:
 			# The first cert is the end-entity cert
-			print('Got a certificate for %s with Subject: %s' % (address, chaincert.get_subject()))
+			print('Got a certificate for %s with Subject: %s' % (address, get_subject_str(chaincert)))
 			cert = chaincert
 			break
 		else:
-			if (usage == 0 and chaincert.check_ca()) or usage == 2:
+			if (usage == 0 and check_ca(chaincert)) or usage == 2:
 				if certsleft: # don't ask for the last one
-					sys.stdout.write('Got a certificate with the following Subject:\n\t%s\nUse this as certificate to match? [y/N] ' % chaincert.get_subject())
+					sys.stdout.write('Got a certificate with the following Subject:\n\t%s\nUse this as certificate to match? [y/N] ' % get_subject_str(chaincert))
 					input_ok = False
 					while not input_ok:
 						user_input = input()
@@ -99,7 +103,7 @@ def genRecords(hostname, address, protocol, port, chain, output='rfc', usage=1, 
 						else:
 							sys.stdout.write('Please answer Y or N')
 				else:
-					print('Using certificate with the following Subject:\n\t%s\n' % chaincert.get_subject())
+					print('Using certificate with the following Subject:\n\t%s\n' % get_subject_str(chaincert))
 					cert = chaincert
 			if cert:
 				break
@@ -111,7 +115,6 @@ def genRecords(hostname, address, protocol, port, chain, output='rfc', usage=1, 
 		else:
 			print(genTLSA(hostname, protocol, port, cert, output, usage, selector, mtype))
 
-	# Clear the cert from memory (to stop M2Crypto from segfaulting)
 	cert=None
 
 def getA(hostname, secure=True):
@@ -222,50 +225,66 @@ def getRecords(hostname, rrtype='A', secure=True, noresolver=False):
 	else:
 		raise DNSLookupError('Unsuccessful DNS lookup or no data returned for rrtype %s (%s).' % (rrtypestr, rrtype))
 
-# identical to Connection.connect() except for the last parameter
-def sslStartTLSConnect(connection, addr, starttls=None):
-        connection.socket.connect(addr)
-        connection.addr = addr
-        if starttls:
-            # primitive method, no error checks yet
-            if starttls == "smtp":
-                data = connection.socket.recv(500)
-                connection.socket.send("EHLO M2Crypto\r\n".encode('ascii'))
-                data = connection.socket.recv(500)
-                connection.socket.send("STARTTLS\r\n".encode('ascii'))
-                data = connection.socket.recv(500)
-            elif starttls == "imap":
-                data = connection.socket.recv(500)
-                connection.socket.send(". STARTTLS\r\n".encode('ascii'))
-                data = connection.socket.recv(500)
-            elif starttls == "ftp":
-                data = connection.socket.recv(500)
-                connection.socket.send("AUTH TLS\r\n".encode('ascii'))
-                data = connection.socket.recv(500)
-            elif starttls == "pop3":
-                data = connection.socket.recv(500)
-                connection.socket.send("STLS\r\n".encode('ascii'))
-                data = connection.socket.recv(500)
-        connection.setup_ssl()
-        connection.set_connect_state()
-        ret = connection.connect_ssl()
-        check = getattr(connection, 'postConnectionCheck', connection.clientPostConnectionCheck)
-        if check is not None:
-            if not check(connection.get_peer_cert(), connection.addr[0]):
-                raise Checker.SSLVerificationError('post connection check failed')
-        return ret
+def get_subject_str(cert):
+	"""Get a string representation of the certificate subject"""
+	return cert.subject.rfc4514_string()
 
-def getHash(certificate, mtype):
+def check_ca(cert):
+	"""Check if a certificate is a CA certificate"""
+	try:
+		bc = cert.extensions.get_extension_for_oid(ExtensionOID.BASIC_CONSTRAINTS)
+		return bc.value.ca
+	except x509.ExtensionNotFound:
+		return False
+
+def get_subject_alt_names(cert):
+	"""Get subject alternative names from a certificate"""
+	try:
+		ext = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+		return [name.value for name in ext.value if isinstance(name, x509.DNSName)]
+	except x509.ExtensionNotFound:
+		return []
+
+# Perform STARTTLS handshake on plain socket before wrapping with SSL
+def do_starttls_handshake(sock, starttls):
+	"""Perform STARTTLS protocol handshake on a plain socket"""
+	if starttls == "smtp":
+		data = sock.recv(500)
+		sock.send("EHLO tlsa\r\n".encode('ascii'))
+		data = sock.recv(500)
+		sock.send("STARTTLS\r\n".encode('ascii'))
+		data = sock.recv(500)
+	elif starttls == "imap":
+		data = sock.recv(500)
+		sock.send(". STARTTLS\r\n".encode('ascii'))
+		data = sock.recv(500)
+	elif starttls == "ftp":
+		data = sock.recv(500)
+		sock.send("AUTH TLS\r\n".encode('ascii'))
+		data = sock.recv(500)
+	elif starttls == "pop3":
+		data = sock.recv(500)
+		sock.send("STLS\r\n".encode('ascii'))
+		data = sock.recv(500)
+
+def getHash(certificate, mtype, use_pubkey=False):
 	"""Hashes the certificate based on the mtype.
-	The certificate should be an M2Crypto.X509.X509 object (or the result of the get_pubkey() function on said object)
+	The certificate should be a cryptography x509.Certificate object.
+	If use_pubkey is True, hash only the SubjectPublicKeyInfo.
 	"""
-	certificate = certificate.as_der()
+	if use_pubkey:
+		cert_bytes = certificate.public_key().public_bytes(
+                encoding=serialization.Encoding.DER,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+	else:
+		cert_bytes = certificate.public_bytes(serialization.Encoding.DER)
 	if mtype == 0:
-		return certificate.hex()
+		return cert_bytes.hex()
 	elif mtype == 1:
-		return sha256(certificate).hexdigest()
+		return sha256(cert_bytes).hexdigest()
 	elif mtype == 2:
-		return sha512(certificate).hexdigest()
+		return sha512(cert_bytes).hexdigest()
 	else:
 		raise Exception('mtype should be 0,1,2')
 
@@ -303,17 +322,17 @@ def getTLSA(hostname, port=443, protocol='tcp', secure=True):
 def verifyCertMatch(record, cert):
 	"""
 	Verify the certificate with the record.
-	record should be a TLSARecord and cert should be a M2Crypto.X509.X509
+	record should be a TLSARecord and cert should be a cryptography x509.Certificate
 	"""
-	if not isinstance(cert, X509.X509):
+	if not isinstance(cert, x509.Certificate):
 		return
 	if not isinstance(record, TLSARecord):
 		return
 
 	if record.selector == 1:
-		certhash = getHash(cert.get_pubkey(), record.mtype)
+		certhash = getHash(cert, record.mtype, use_pubkey=True)
 	else:
-		certhash = getHash(cert, record.mtype)
+		certhash = getHash(cert, record.mtype, use_pubkey=False)
 
 	if not certhash:
 		return
@@ -324,8 +343,8 @@ def verifyCertMatch(record, cert):
 		return False
 
 def verifyCertNameWithHostName(cert, hostname, with_msg=False):
-	"""Verify the name on the certificate with a hostname, we need this because we get the cert based on IP address and thusly cannot rely on M2Crypto to verify this"""
-	if not isinstance(cert, X509.X509):
+	"""Verify the name on the certificate with a hostname, we need this because we get the cert based on IP address and thusly cannot rely on ssl to verify this"""
+	if not isinstance(cert, x509.Certificate):
 		return
 	if not isinstance(hostname, str):
 		return
@@ -335,15 +354,15 @@ def verifyCertNameWithHostName(cert, hostname, with_msg=False):
 	hostname = hostname.lower()
 
 	certnames = []
-	for entry in str(cert.get_subject()).lower().split("/"):
-		if entry.startswith("cn="):
-			certnames.append(entry[3:])
-	try:
-		for value in re.split(", ?", cert.get_ext('subjectAltName').get_value().lower()):
-			if value.startswith("dns:"):
-				certnames.append(value[4:])
-	except:
-		pass
+	# Get CN from subject
+	for attr in cert.subject:
+		if attr.oid == NameOID.COMMON_NAME:
+			certnames.append(attr.value.lower())
+	# Get SubjectAltName DNS entries
+	san_names = get_subject_alt_names(cert)
+	for name in san_names:
+		certnames.append(name.lower())
+
 	if hostname in certnames:
 		return True
 	for certname in certnames:
@@ -351,7 +370,8 @@ def verifyCertNameWithHostName(cert, hostname, with_msg=False):
 			return True
 
 	if with_msg:
-		print('WARNING: Name on the certificate (Subject: %s, SubjectAltName: %s) doesn\'t match requested hostname (%s).' % (str(cert.get_subject()), cert.get_ext('subjectAltName').get_value(), hostname))
+		san_str = ', '.join(san_names) if san_names else 'None'
+		print('WARNING: Name on the certificate (Subject: %s, SubjectAltName: %s) doesn\'t match requested hostname (%s).' % (get_subject_str(cert), san_str, hostname))
 	return False
 
 def checkChainLink(chain, record=None):
@@ -360,33 +380,35 @@ def checkChainLink(chain, record=None):
 	matched = None
 	for cert in chain:
 		if previous_issuer:
-			if not str(previous_issuer) == str(cert.get_subject()): # The chain cannot be valid
+			if not previous_issuer == cert.subject: # The chain cannot be valid
 				chained = False
 				break
-		previous_issuer = cert.get_issuer()
+		previous_issuer = cert.issuer
 		if record and verifyCertMatch(record, cert):
 			matched = cert
 	return chained, matched
 
 def getLocalChain(filename, debug):
-	"""Returns list of M2Crypto.X509.X509 objects and verification result"""
+	"""Returns list of cryptography x509.Certificate objects and verification result"""
 	chain = []
-	bio = BIO.openfile(filename)
-	Err = None
-	while True:
+	with open(filename, 'rb') as f:
+		pem_data = f.read()
+	# Parse all PEM certificates in the file
+	import re as regex
+	pem_certs = regex.findall(
+		rb'-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----',
+		pem_data
+	)
+	for pem_cert in pem_certs:
 		try:
-			cptr = m2.x509_read_pem(bio._ptr())
+			cert = x509.load_pem_x509_certificate(pem_cert, default_backend())
+			chain.append(cert)
 		except Exception as e:
-			Err = e
-			break;
-		if not cptr:
-			break
-		chain.append(X509.X509(cptr, _pyfree=1))
+			if debug:
+				print('Error parsing certificate: %s' % e, file=sys.stderr)
+			continue
 	if not chain:
-		if Err:
-			raise
-		else:
-			raise Exception("Could not load %s" % filename)
+		raise Exception("Could not load %s" % filename)
 	# FIXME - is this possible using the library (without a call to openssl tool)?
 	cmd = ["openssl", "verify", filename]
 	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -430,7 +452,7 @@ def verifyChain(record, chain, verify_result, pre_exit, local, source):
 					reason = getVerificationErrorReason(verify_result)
 				print('FAIL (%s): %s matches the one mentioned in the TLSA record but the following error was raised during PKIX validation (%s): %s' % (ut, text_cert, source, reason))
 				if pre_exit == 0: pre_exit = 2
-			if args.debug: print('The matched certificate has Subject: %s' % cert.get_subject())
+			if args.debug: print('The matched certificate has Subject: %s' % get_subject_str(matched))
 		else:
 			print('FAIL: %s does not match the TLSA record (%s)' % (text_cert, source))
 			if pre_exit == 0: pre_exit = 2
@@ -446,7 +468,7 @@ def verifyChain(record, chain, verify_result, pre_exit, local, source):
 		if not chained:
 			print("WARN: Certificates don't chain")
 		if matched:
-			if cert.check_ca():
+			if check_ca(matched):
 				if verify_result == 0:
 					print('SUCCESS (%s): A %s matches the one mentioned in the TLSA record and is a CA certificate (%s)' % (ut, text_chain, source))
 				else:
@@ -459,7 +481,7 @@ def verifyChain(record, chain, verify_result, pre_exit, local, source):
 			else:
 				print('FAIL (%s): A %s matches the one mentioned in the TLSA record but is not a CA certificate (%s)' % (ut, text_chain, source))
 				if pre_exit == 0: pre_exit = 2
-			if args.debug: print('The matched certificate has Subject: %s' % cert.get_subject())
+			if args.debug: print('The matched certificate has Subject: %s' % get_subject_str(matched))
 		else:
 			print('FAIL (%s): No %s matches the TLSA record (%s)' % (ut, text_chain, source))
 			if pre_exit == 0: pre_exit = 2
@@ -755,55 +777,61 @@ if __name__ == '__main__':
 			for address in addresses:
 				if args.debug:
 					print('Got the following IP: %s' % str(address))
-				# We do the certificate handling here, as M2Crypto keeps segfaulting when we do it in a method
-				ctx = SSL.Context()
+				# Create SSL context
+				ctx = ssl.create_default_context()
 				if os.path.isfile(args.ca_cert):
-					if ctx.load_verify_locations(cafile=args.ca_cert) != 1: raise Exception('No CA cert')
+					ctx.load_verify_locations(cafile=args.ca_cert)
 				elif os.path.exists(args.ca_cert):
-					if ctx.load_verify_locations(capath=args.ca_cert) != 1: raise Exception('No CA certs')
+					ctx.load_verify_locations(capath=args.ca_cert)
 				else:
 					print('%s is neither a file nor a directory, unable to continue' % args.ca_cert, file=sys.stderr)
 					sys.exit(1)
 				# Don't error when the verification fails in the SSL handshake
-				ctx.set_verify(SSL.verify_none, depth=9)
+				ctx.check_hostname = False
+				ctx.verify_mode = ssl.CERT_OPTIONAL
 				if isinstance(address, AAAARecord):
 					sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 					sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 				else:
-					sock = None
-				connection = SSL.Connection(ctx, sock=sock)
+					sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+					sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 				try:
-					connection.set_tlsext_host_name(snihost)
-					if(args.debug):
-						print('Did set servername %s' % snihost)
-				except AttributeError:
-					print('Could not set SNI (old M2Crypto version?)')
-				except:
-					print('Could not set SNI')
-				try:
+					sock.connect((str(address), int(args.port)))
 					if args.starttls:
-						sslStartTLSConnect(connection, (str(address), int(args.port)), args.starttls)
-						#connection.connect((str(address), int(args.port)), args.starttls)
-					else:
-						connection.connect((str(address), int(args.port)))
-				#except TypeError:
-				#	print 'Cannot connect to %s (old M2Crypto version not supporting start script?)' % address
-				#	continue
-				except SSL.Checker.WrongHost as e:
-					# The name on the remote cert doesn't match the hostname because we connect on IP, not hostname (as we want secure lookup)
+						do_starttls_handshake(sock, args.starttls)
+					connection = ctx.wrap_socket(sock, server_hostname=snihost)
+					if args.debug:
+						print('Did set servername %s' % snihost)
+				except ssl.SSLCertVerificationError:
+					# Certificate verification failed but we still want to check TLSA
 					pass
 				except socket.error as e:
 					print('Cannot connect to %s: %s' % (address, str(e)))
 					continue
-				chain = connection.get_peer_cert_chain()
-				verify_result = connection.get_verify_result()
+				# Get peer certificate chain
+				if hasattr(connection, 'get_peer_cert_chain'):
+					der_certs = connection.get_peer_cert_chain(binary_form=True)
+					if der_certs:
+						chain = [x509.load_der_x509_certificate(der_cert, default_backend()) for der_cert in der_certs]
+					else:
+						chain = None
+				else:
+					# Fallback for Python < 3.13 without get_peer_cert_chain
+					der_cert = connection.getpeercert(binary_form=True)
+					if der_cert:
+						chain = [x509.load_der_x509_certificate(der_cert, default_backend())]
+					else:
+						chain = None
+				if not chain:
+					print('Could not get certificate from %s' % address)
+					continue
+				# Get verification result (0 means OK in ssl module when no exception)
+				verify_result = 0  # If we got here without exception, verification passed
 
 				# Good, now let's verify
 				pre_exit = verifyChain(record, chain, verify_result, pre_exit, False, address)
-				# Cleanup, just in case
-				connection.clear()
+				# Cleanup
 				connection.close()
-				ctx.close()
 
 			# END for address in addresses
 		# END for record in records
@@ -851,46 +879,49 @@ if __name__ == '__main__':
 			for address in addresses:
 				if args.debug:
 					print('Attempting to get certificate from %s' % str(address))
-				# We do the certificate handling here, as M2Crypto keeps segfaulting when try to do stuff with the cert if we don't
-				ctx = SSL.Context()
-				ctx.set_verify(SSL.verify_none, depth=9)
+				# Create SSL context
+				ctx = ssl.create_default_context()
+				ctx.check_hostname = False
+				ctx.verify_mode = ssl.CERT_NONE
 				if isinstance(address, AAAARecord):
 					sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 					sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 				else:
-					sock = None
-				connection = SSL.Connection(ctx, sock=sock)
+					sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+					sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 				try:
-					connection.set_tlsext_host_name(snihost)
-					if(args.debug):
-						print('Did set servername %s' % snihost)
-				except AttributeError:
-					print('Could not set SNI (old M2Crypto version?)')
-				except:
-					print('Could not set SNI')
-				try:
+					sock.connect((str(address), int(connection_port)))
 					if args.starttls:
-						sslStartTLSConnect(connection, (str(address), int(connection_port)), args.starttls)
-						#connection.connect((str(address), int(connection_port)), args.starttls)
-					else:
-						connection.connect((str(address), int(connection_port)))
-				#except TypeError:
-				#	print 'Cannot connect to %s (old M2Crypto version not supporting start script?)' % address
-				#	continue
-				except SSL.Checker.WrongHost:
-					pass
+						do_starttls_handshake(sock, args.starttls)
+					connection = ctx.wrap_socket(sock, server_hostname=snihost)
+					if args.debug:
+						print('Did set servername %s' % snihost)
 				except socket.error as e:
 					print('Cannot connect to %s: %s' % (address, str(e)))
 					continue
 
-				chain = connection.get_peer_cert_chain()
+				# Get peer certificate chain
+				if hasattr(connection, 'get_peer_cert_chain'):
+					der_certs = connection.get_peer_cert_chain(binary_form=True)
+					if der_certs:
+						chain = [x509.load_der_x509_certificate(der_cert, default_backend()) for der_cert in der_certs]
+					else:
+						chain = None
+				else:
+					# Fallback for Python < 3.13 without get_peer_cert_chain
+					der_cert = connection.getpeercert(binary_form=True)
+					if der_cert:
+						chain = [x509.load_der_x509_certificate(der_cert, default_backend())]
+					else:
+						chain = None
+				if not chain:
+					print('Could not get certificate from %s' % address)
+					continue
 				if not verifyCertNameWithHostName(cert=chain[0], hostname=str(args.host), with_msg=args.debug):
 					print('WARNING: Certificate name does not match the hostname')
 				genRecords(args.host, address, args.protocol, args.port, chain, args.output, args.usage, args.selector, args.mtype)
-				# Cleanup the connection and context
-				connection.clear()
+				# Cleanup
 				connection.close()
-				ctx.close()
 
 		else: # Pass the path to the certificate to the genTLSA function
 			try:

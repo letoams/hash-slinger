@@ -10,7 +10,7 @@ Source:  %{url}archive/%{version}/%{name}-%{version}.tar.gz
 BuildRequires: python3-devel, make
 Requires: python3 >= 3.4
 Requires: python3-dns, python3-unbound
-Requires: openssh-clients >= 4, python3-m2crypto, python3-gnupg >= 0.3.7
+Requires: openssh-clients >= 4, python3-cryptography, python3-gnupg >= 0.3.7
 BuildArch: noarch
 Obsoletes: sshfp < 2.0
 Provides: sshfp  = %{version}
