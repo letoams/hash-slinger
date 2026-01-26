@@ -1,4 +1,4 @@
-v3.5 (unreleased)
+v3.5 (January, 26, 2026)
 - Replace the M2Crypto library with the Python cryptography library and standard ssl module for TLS/SSL handling [Bastian Germann]
 - Use cryptography.x509 for X.509 certificate parsing and manipulation [Bastian Germann]
 - Use standard ssl module for TLS connections instead of M2Crypto.SSL [Bastian Germann]
