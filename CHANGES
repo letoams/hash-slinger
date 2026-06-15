@@ -1,3 +1,7 @@
+v3.6 (June, 15, 2026)
+- Fix cert chain extraction with Python cryptography library [Dirk Stöcker]
+- prevent Missing Authority Key Identifier exception [Dirk Stöcker]
+
 v3.5 (January, 26, 2026)
 - Replace the M2Crypto library with the Python cryptography library and standard ssl module for TLS/SSL handling [Bastian Germann]
 - Use cryptography.x509 for X.509 certificate parsing and manipulation [Bastian Germann]
