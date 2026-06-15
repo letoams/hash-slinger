@@ -913,7 +913,13 @@ if __name__ == '__main__':
 					continue
 
 				# Get peer certificate chain
-				if hasattr(connection, 'get_peer_cert_chain'):
+				if hasattr(connection, 'get_unverified_chain'):
+					der_certs = connection.get_unverified_chain()
+					if der_certs:
+						chain = [x509.load_der_x509_certificate(der_cert, default_backend()) for der_cert in der_certs]
+					else:
+						chain = None
+				elif hasattr(connection, 'get_peer_cert_chain'):
 					der_certs = connection.get_peer_cert_chain(binary_form=True)
 					if der_certs:
 						chain = [x509.load_der_x509_certificate(der_cert, default_backend()) for der_cert in der_certs]
