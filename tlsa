@@ -188,7 +188,7 @@ def getRecords(hostname, rrtype='A', secure=True, noresolver=False):
 		# file format guessing - unbound should deal with this :(
 		try:
 			ctx.add_ta_file(ROOTKEY)
-		except:
+		except Exception:
 			unbound.ub_ctx_trustedkeys(ctx,ROOTKEY)
 	# Use the local cache and emulate /etc/hosts
 	ctx.hosts("/etc/hosts")
@@ -530,7 +530,7 @@ class TLSARecord:
 			self.selector = int(selector)
 			self.mtype = int(mtype)
 			self.cert = cert
-		except:
+		except Exception:
 			raise Exception('Invalid value passed, unable to create a TLSARecord')
 
 	def getRecord(self, generic=False):
@@ -549,7 +549,7 @@ class TLSARecord:
 		try:
 			if not 1 <= int(self.getPort()) <= 65535:
 				err.append('Port %s not within correct range (1 <= port <= 65535)' % self.getPort())
-		except:
+		except (ValueError, TypeError):
 			if self.getPort() != '*':
 				err.append('Port %s not a number' % self.getPort())
 		if not self.usage in [0,1,2,3]:
@@ -609,7 +609,7 @@ class ARecord:
 		try:
 			IPv4Address(self.address)
 			return True
-		except:
+		except ValueError:
 			return False
 
 class AAAARecord:
@@ -626,7 +626,7 @@ class AAAARecord:
 		try:
 			IPv6Address(self.address)
 			return True
-		except:
+		except ValueError:
 			return False
 
 # Exceptions
@@ -871,7 +871,7 @@ if __name__ == '__main__':
 						if 1 <= int(user_input) <= 65535:
 							connection_port = user_input
 							input_ok = True
-					except:
+					except (ValueError, TypeError):
 						sys.stdout.write('Port %s not numerical or within correct range (1 <= port <= 65535), try again (hit enter for default 443): ' % user_input)
 			# Get the address records for the host
 			try:
