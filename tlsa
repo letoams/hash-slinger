@@ -366,7 +366,7 @@ def verifyCertNameWithHostName(cert, hostname, with_msg=False):
 	if hostname in certnames:
 		return True
 	for certname in certnames:
-		if certname[0] == '*' and hostname.endswith(certname[1:]):
+		if certname[0] == '*' and hostname.split('.')[1:] == certname.split('.')[1:]:
 			return True
 
 	if with_msg:
